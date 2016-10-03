@@ -5,8 +5,8 @@ from collections import OrderedDict
 
 from enum import Enum
 
-from stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
-from strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
+from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
+from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
 
 
 IMPORT_LINE = r'^import\s.*'
@@ -40,6 +40,7 @@ def split_from_import(s):
     from_part, import_list = re.split('\s+import\s+', s)
     imps = import_list.split(',')
     imps = sorted(set([i.strip() for i in imps]), key=lambda s: s.lower())
+    # imps = sorted(set([i.strip() for i in imps]))
     return from_part + " import " + ', '.join(imps)
 
 
@@ -57,9 +58,23 @@ class Sorter():
 
     def process_line(self, l):
         if re.match(IMPORT_LINE, l):
+            i = 0
+            while i < len(self.lines_before_import) - 1:
+                if self.lines_before_import[i+1] == self.lines_before_import[i] == '':
+                    self.lines_before_import[i:i+1] = []
+                else:
+                    i += 1
+
             self.pre_import[l] = self.lines_before_import
             self.lines_before_import = []
         elif re.match(FROM_IMPORT_LINE, l):
+            i = 0
+            while i < len(self.lines_before_import) - 1:
+                if self.lines_before_import[i+1] == self.lines_before_import[i] == '\n':
+                    self.lines_before_import[i:i+1] = []
+                else:
+                    i += 1
+
             self.pre_from_import[split_from_import(l)] = self.lines_before_import
             self.lines_before_import = []
         else:
@@ -67,27 +82,31 @@ class Sorter():
 
     def split_it(self, text):
         myl = ''
-        giant_comment = False
+        giant_comment = None
 
         for l in text.split('\n'):
-            myl += l.rstrip() + '\n'
 
-            doc_string_points = get_doc_string(l, 0, in_doc_string=giant_comment)
+            if not giant_comment:
+                doc_string_points = get_doc_string(l)
 
-            if len(doc_string_points) % 2 == 0:
-                if not giant_comment:
-                    self.process_line(myl.rstrip())
-                    myl = ''
+                if len(doc_string_points) % 2 == 0:
+                    self.process_line(l.rstrip())
+                else:
+                    myl = l.rstrip() + '\n'
+                    giant_comment = doc_string_points[-1][1]
             else:
-                if giant_comment:
-                    myl += "\n" + l[0:doc_string_points[0]]
+                comment_point = l.find(giant_comment)
+                if comment_point != -1:
+                    myl += l[0:comment_point + 3]
                     self.process_line(myl.rstrip())
-                    rest = l[doc_string_points[0] + 3:].rstrip()
+                    giant_comment = None
+
+                    # Doesnt work if we start a triple comment here again.
+                    rest = l[comment_point + 3:].rstrip()
                     if rest:
                         self.process_line(rest)
-                    myl = ''
-
-                giant_comment = not giant_comment
+                else:
+                    myl += l.rstrip() + '\n'
 
     # -----------------rebuilders:-------------
     def rebuild(self):

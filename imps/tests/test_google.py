@@ -13,14 +13,13 @@ from os import path
 import StringIO
 import sys
 
-import enum
+import flake8
+from flake8.defaults import *
+
 import pytest
 from pytest import *
 from pytest import capture
-from pytest import compat, config
-
-import imps
-from imps.imps import *
+from pytest import compat, Config
 
 from . import A
 from . import B

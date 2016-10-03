@@ -1,0 +1,11 @@
+*.pyc
+.cache/
+.idea/
+UNKNOWN.egg-info/
+build/
+dist/
+imps.egg-info/
+.tox/
+
+
+

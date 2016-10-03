@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
-from imps.core import Sorter, Style
+
+from imps.core import Sorter, split_from_import, Style
 
 
 def test_base():
@@ -81,10 +82,15 @@ def test_newlines_reduced():
 
 
 import sys
+
+
+import A
 """
     output = """import io
 
 import sys
+
+import A
 """
     assert Sorter(Style.SMARKETS).sort(input) == output
 
@@ -226,3 +232,11 @@ from enum import Enum
 from strings import strip_to_module_name
 """
     assert Sorter(Style.SMARKETS).sort(input) == output
+
+
+def test_split_from_import():
+    assert split_from_import('from A import B') == 'from A import B'
+
+
+def test_split_from_import_complex():
+    assert split_from_import('from A.B   import Z,   F, W') == 'from A.B import F, W, Z'
