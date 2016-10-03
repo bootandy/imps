@@ -1,0 +1,11 @@
+Tests:
+to_run:
+pytest
+
+Pycharm: Specify test as type: py.test
+
+to install:
+=========
+python setup.py install
+
+
