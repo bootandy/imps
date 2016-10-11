@@ -242,9 +242,25 @@ from strings import strip_to_module_name as stripper
     assert Sorter(Style.SMARKETS).sort(input) == input
 
 
+def test_import_using_parenthesis():
+    input = """from string import (
+    upper as a_up,
+    strip,
+    find,
+)
+"""
+    output = """from string import find, strip, upper as a_up
+"""
+    assert Sorter(Style.SMARKETS).sort(input) == output
+
+
 def test_split_from_import():
     assert split_from_import('from A import B') == 'from A import B'
 
 
 def test_split_from_import_complex():
     assert split_from_import('from A.B   import Z,   F, W') == 'from A.B import F, W, Z'
+
+
+def test_split_from_import_with_as():
+    assert split_from_import('from A   import this as that,   A,Z') == 'from A import A, this as that, Z'

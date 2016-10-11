@@ -21,7 +21,6 @@ from pytest import *
 from pytest import capture
 from pytest import compat, config
 
-
 from . import A
 from . import B
 from .A import A

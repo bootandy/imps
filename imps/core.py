@@ -6,11 +6,18 @@ from collections import OrderedDict
 from enum import Enum
 
 from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
-from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
+from imps.strings import (
+    get_doc_string,
+    strip_to_module_name,
+    # We can't handle comments in an import () yet
+    strip_to_module_name_from_import
+)
 
 
 IMPORT_LINE = r'^import\s.*'
 FROM_IMPORT_LINE = r'^from\s.*import\s.*'
+
+FROM_IMPORT_LINE_WITH_PARAN = r'^from\s.*import\s.*\('
 
 
 class Style(Enum):
@@ -36,11 +43,11 @@ def sorter_unify_import_and_from(s):
     return sorter(s)
 
 
+# We do sorting here early for a single line with multiple imports.
 def split_from_import(s):
     from_part, import_list = re.split('\s+import\s+', s)
     imps = import_list.split(',')
-    imps = sorted(set([i.strip() for i in imps]), key=lambda s: s.lower())
-    # imps = sorted(set([i.strip() for i in imps]))
+    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=lambda s: s.lower())
     return from_part + " import " + ', '.join(imps)
 
 
@@ -56,26 +63,21 @@ class Sorter():
         self.split_it(lines)
         return self.rebuild()
 
+    def remove_double_newlines(self, lines):
+        i = 0
+        while i < len(lines) - 1:
+            if lines[i+1] == lines[i] == '':
+                lines[i:i+1] = []
+            else:
+                i += 1
+        return lines
+
     def process_line(self, l):
         if re.match(IMPORT_LINE, l):
-            i = 0
-            while i < len(self.lines_before_import) - 1:
-                if self.lines_before_import[i+1] == self.lines_before_import[i] == '':
-                    self.lines_before_import[i:i+1] = []
-                else:
-                    i += 1
-
-            self.pre_import[l] = self.lines_before_import
+            self.pre_import[l] = self.remove_double_newlines(self.lines_before_import)
             self.lines_before_import = []
         elif re.match(FROM_IMPORT_LINE, l):
-            i = 0
-            while i < len(self.lines_before_import) - 1:
-                if self.lines_before_import[i+1] == self.lines_before_import[i] == '\n':
-                    self.lines_before_import[i:i+1] = []
-                else:
-                    i += 1
-
-            self.pre_from_import[split_from_import(l)] = self.lines_before_import
+            self.pre_from_import[split_from_import(l)] = self.remove_double_newlines(self.lines_before_import)
             self.lines_before_import = []
         else:
             self.lines_before_import.append(l)
@@ -83,14 +85,28 @@ class Sorter():
     def split_it(self, text):
         myl = ''
         giant_comment = None
+        in_import_param = False
 
         for l in text.split('\n'):
 
-            if not giant_comment:
+            if in_import_param:
+                myl += l.strip()
+                if ')' in myl:
+                    myl = myl.replace('(', '')
+                    myl = myl.replace(')', '')
+                    self.process_line(myl)
+                    in_import_param = False
+                    myl = ''
+
+            elif not giant_comment:
                 doc_string_points = get_doc_string(l)
 
                 if len(doc_string_points) % 2 == 0:
-                    self.process_line(l.rstrip())
+                    if re.match(FROM_IMPORT_LINE_WITH_PARAN, l):
+                        in_import_param = True
+                        myl = l.rstrip()
+                    else:
+                        self.process_line(l)
                 else:
                     myl = l.rstrip() + '\n'
                     giant_comment = doc_string_points[-1][1]
@@ -98,11 +114,11 @@ class Sorter():
                 comment_point = l.find(giant_comment)
                 if comment_point != -1:
                     myl += l[0:comment_point + 3]
-                    self.process_line(myl.rstrip())
+                    self.process_line(myl)
                     giant_comment = None
 
                     # Doesnt work if we start a triple comment here again.
-                    rest = l[comment_point + 3:].rstrip()
+                    rest = l[comment_point + 3:]
                     if rest:
                         self.process_line(rest)
                 else:
@@ -117,6 +133,7 @@ class Sorter():
         for type, imports in imports_by_type.items():
             self.first_import = True
 
+            # try and inject these functions in instead.
             if self.type == Style.SMARKETS:
                 for imp in sorted(imports, key=sorter):
                     output += self.build(imp, self.pre_import[imp])
