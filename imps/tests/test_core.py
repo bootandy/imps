@@ -234,6 +234,14 @@ from strings import strip_to_module_name
     assert Sorter(Style.SMARKETS).sort(input) == output
 
 
+def test_import_as():
+    input = """import enum as zenum
+
+from strings import strip_to_module_name as stripper
+"""
+    assert Sorter(Style.SMARKETS).sort(input) == input
+
+
 def test_split_from_import():
     assert split_from_import('from A import B') == 'from A import B'
 
