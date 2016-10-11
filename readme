@@ -1,4 +1,9 @@
-https://travis-ci.org/bootandy/imps.svg?branch=master
+#######
+
+.. image:: https://travis-ci.org/bootandy/imps.png?branch=master
+    :target: https://travis-ci.org/bootandy/imps
+    :alt: Build Status
+
 
 To Install:
 =========
