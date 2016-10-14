@@ -76,7 +76,6 @@ def setup_vars(config, args):
     return style, max_line_length
 
 
-
 def get_args():
     parser = argparse.ArgumentParser(description='Sort your python')
 
