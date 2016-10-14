@@ -45,12 +45,12 @@ def get_config(path):
     if os.path.isfile(path):
         path, _ = os.path.split(path)
 
+    path = os.path.abspath(path)
     config = configparser.ConfigParser()
 
-    # handle no config file ever found
-    while not config.sections():
+    while not config.sections() and path != '/':
         config.read(os.path.join(path, 'setup.cfg'))
-        path = os.path.join(path, '..')
+        path, _ = os.path.split(path)
 
     return config
 
