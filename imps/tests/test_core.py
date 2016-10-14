@@ -255,6 +255,14 @@ def test_import_using_parenthesis():
     assert Sorter(Style.SMARKETS).sort(input) == output
 
 
+def test_noqa_import():
+    input = """import X
+import Z  # NOQA
+import Y
+"""
+    assert Sorter(Style.SMARKETS).sort(input) == input
+
+
 def test_split_from_import():
     assert split_from_import('from A import B') == 'from A import B'
 

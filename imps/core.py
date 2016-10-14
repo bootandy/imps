@@ -16,14 +16,18 @@ from imps.strings import (
 
 IMPORT_LINE = r'^import\s.*'
 FROM_IMPORT_LINE = r'^from\s.*import\s.*'
-
 FROM_IMPORT_LINE_WITH_PARAN = r'^from\s.*import\s.*\('
+NOQA = r'.*\s*\#\sNOQA\s*$'  # wont work if NOQA is inside a tripple string.
 
 
 class Style(Enum):
     SMARKETS = 1
     GOOGLE = 2
     CRYPTOGRAPHY = 3
+
+
+def does_line_end_in_noqa(line):
+    return re.match(NOQA, line)
 
 
 def get_core_import(imp):
@@ -73,7 +77,9 @@ class Sorter():
         return lines
 
     def process_line(self, l):
-        if re.match(IMPORT_LINE, l):
+        if does_line_end_in_noqa(l):
+            self.lines_before_import.append(l)
+        elif re.match(IMPORT_LINE, l):
             self.pre_import[l] = self.remove_double_newlines(self.lines_before_import)
             self.lines_before_import = []
         elif re.match(FROM_IMPORT_LINE, l):
