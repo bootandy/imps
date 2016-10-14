@@ -12,10 +12,6 @@ import sys
 from functools import *
 from os import path
 
-import enum
-from enum import Enum
-from enum import EnumEmptyError
-
 import pytest
 from pytest import *
 from pytest import capture
@@ -46,9 +42,8 @@ import os
     output = """from __future__ import absolute_import
 
 import ast
-import os
-
 import enum
+import os
 
 import pytest
 """

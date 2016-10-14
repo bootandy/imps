@@ -45,10 +45,10 @@ import os
     output = """from __future__ import absolute_import
 
 import ast
+import enum
 
 import os
 
-import enum
 import pytest
 """
     assert Sorter(Style.GOOGLE).sort(input) == output

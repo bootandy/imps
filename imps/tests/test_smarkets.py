@@ -7,6 +7,7 @@ def test_smarkets_style():
     input = '''from __future__ import absolute_import, division, print_function
 
 import ast
+import configparser
 import os
 import StringIO
 import sys

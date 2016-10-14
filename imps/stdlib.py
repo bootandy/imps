@@ -6,6 +6,7 @@ import sys
 
 from contextlib import contextmanager
 from importlib import import_module
+from flake8_import_order import STDLIB_NAMES
 
 FUTURE = 0
 STDLIB = 1
@@ -60,8 +61,7 @@ def get_paths(module):
     if module == 'imps':
         return LOCAL
 
-    # sys has no file
-    if module in ('sys', 'operator'):
+    if module in STDLIB_NAMES:
         return STDLIB
 
     try:
