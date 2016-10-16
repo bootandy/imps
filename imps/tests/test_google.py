@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from imps.core import Sorter, Style
+from imps.core import Sorter
 
 
 def test_google_style():
@@ -30,7 +30,7 @@ from .. import B
 from ..A import A
 from ..B import B
 """
-    assert Sorter(Style.GOOGLE).sort(input) == input
+    assert Sorter('g').sort(input) == input
 
 
 def test_google_style_handles_newlines():
@@ -51,4 +51,4 @@ import os
 
 import pytest
 """
-    assert Sorter(Style.GOOGLE).sort(input) == output
+    assert Sorter('g').sort(input) == output

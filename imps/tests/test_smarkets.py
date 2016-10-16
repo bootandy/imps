@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from imps.core import Sorter, Style
+from imps.core import Sorter
 
 
 def test_smarkets_style():
@@ -22,6 +22,9 @@ from pytest import *
 from pytest import capture
 from pytest import compat, config
 
+import imps
+from imps import *
+
 from . import A
 from . import B
 from .A import A
@@ -32,4 +35,4 @@ from ..A import A
 from ..B import B
 '''
 
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter('s', 80, ['imps']).sort(input) == input

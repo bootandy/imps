@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from imps.core import Sorter, Style
+from imps.core import Sorter
 
 
 def test_crypto_style():
@@ -12,12 +12,12 @@ import sys
 from functools import *
 from os import path
 
+import flake8
+from flake8.defaults import *
+
 import pytest
 from pytest import *
 from pytest import capture
-
-import imps
-from imps.imps import *
 
 from . import A
 from . import B
@@ -29,7 +29,7 @@ from ..A import A
 from ..B import B
 """
 
-    assert Sorter(Style.CRYPTOGRAPHY).sort(input) == input
+    assert Sorter('c').sort(input) == input
 
 
 def test_crypto_style_handles_newlines():
@@ -47,4 +47,4 @@ import os
 
 import pytest
 """
-    assert Sorter(Style.CRYPTOGRAPHY).sort(input) == output
+    assert Sorter('c').sort(input) == output

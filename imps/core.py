@@ -17,13 +17,24 @@ from imps.strings import (
 IMPORT_LINE = r'^import\s.*'
 FROM_IMPORT_LINE = r'^from\s.*import\s.*'
 FROM_IMPORT_LINE_WITH_PARAN = r'^from\s.*import\s.*\('
-NOQA = r'.*\s*\#\sNOQA\s*$'  # wont work if NOQA is inside a tripple string.
+NOQA = r'.*\s*\#\sNOQA\s*$'  # wont work if NOQA is inside a triple string.
 
 
 class Style(Enum):
     SMARKETS = 1
     GOOGLE = 2
     CRYPTOGRAPHY = 3
+
+
+def get_style(s):
+    if s in ('s', 'smarkets'):
+        return Style.SMARKETS
+    elif s in ('g', 'google'):
+        return Style.GOOGLE
+    elif s in ('c', 'crypto', 'cryptography'):
+        return Style.CRYPTOGRAPHY
+    else:
+        raise Exception('Unknown style type %s', s)
 
 
 def does_line_end_in_noqa(line):
@@ -56,14 +67,15 @@ def split_from_import(s):
 
 
 class Sorter():
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, type='s', max_line_length=80, local_imports=None):
+        self.type = get_style(type)
+        self.max_line_length = max_line_length
+        self.local_imports = local_imports or []
 
     def sort(self, lines):
         self.lines_before_import = []
         self.pre_import = {}
         self.pre_from_import = {}
-
         self.split_it(lines)
         return self.rebuild()
 
@@ -132,8 +144,10 @@ class Sorter():
 
     # -----------------rebuilders:-------------
     def rebuild(self):
-        imports_by_type = classify_imports(self.pre_import.keys(), strip_to_module_name)
-        from_imports_by_type = classify_imports(self.pre_from_import.keys(), strip_to_module_name_from_import)
+        imports_by_type = classify_imports(self.pre_import.keys(), strip_to_module_name, self.local_imports)
+        from_imports_by_type = classify_imports(
+            self.pre_from_import.keys(), strip_to_module_name_from_import, self.local_imports
+        )
         output = ""
 
         for type, imports in imports_by_type.items():
@@ -199,7 +213,7 @@ class Sorter():
         return output
 
 
-def classify_imports(imports, strip_to_module):
+def classify_imports(imports, strip_to_module, local_imports):
     result = OrderedDict()
     result[FUTURE] = []
     result[STDLIB] = []
@@ -208,5 +222,5 @@ def classify_imports(imports, strip_to_module):
     result[RELATIVE] = []
 
     for i in imports:
-        result[get_paths(strip_to_module(i))].append(i)
+        result[get_paths(strip_to_module(i), local_imports)].append(i)
     return result

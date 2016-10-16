@@ -5,18 +5,7 @@ import argparse
 import configparser
 import os
 
-from imps.core import Sorter, Style
-
-
-def get_style(s):
-    if s in ('s', 'smarkets'):
-        return Style.SMARKETS
-    elif s in ('g', 'google'):
-        return Style.GOOGLE
-    elif s in ('c', 'crypto', 'cryptography'):
-        return Style.CRYPTOGRAPHY
-    else:
-        raise Exception('Unknown style type %s', s)
+from imps.core import Sorter
 
 
 def run(sorter, file_name):
@@ -73,7 +62,14 @@ def setup_vars(config, args):
     if not max_line_length:
         max_line_length = 80
 
-    return style, max_line_length
+    # These all look similar can we remove some code dup?
+    application_import_names = args.application_import_names
+    if not application_import_names:
+        application_import_names = config.get('imps', 'application-import-names', fallback='')
+    if not application_import_names:
+        application_import_names = config.get('flake8', 'application-import-names', fallback='')
+
+    return style, max_line_length, application_import_names.split(' ')
 
 
 def get_args():
@@ -83,13 +79,14 @@ def get_args():
 
     parser.add_argument('-s', '--style', type=str, help='Import style', default='')
     parser.add_argument('-l', '--max-line-length', type=int, help='Line length')
+    parser.add_argument('-n', '--application-import-names', type=str, help='Local Imports')
 
     args = parser.parse_args()
 
     config = get_config(args.file)
-    style, max_line_length = setup_vars(config, args)
+    style, max_line_length, local_imports = setup_vars(config, args)
 
-    sorter = Sorter(get_style(style))
+    sorter = Sorter(style, max_line_length, local_imports)
 
     recurse_down_tree(sorter, args.file)
 

@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from imps.core import Sorter, split_from_import, Style
+from imps.core import Sorter, split_from_import
 
 
 def test_base():
@@ -8,7 +8,7 @@ def test_base():
 import Y
 import Z
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_base_bad_order():
@@ -20,7 +20,7 @@ import Y
 import Y
 import Z
 """
-    assert Sorter(Style.SMARKETS).sort(input) == output
+    assert Sorter().sort(input) == output
 
 
 def test_base_more_spaces():
@@ -38,7 +38,7 @@ import B
 #C
 import C
 """
-    assert Sorter(Style.SMARKETS).sort(input) == output
+    assert Sorter().sort(input) == output
 
 
 def test_base_with_func_in():  # Maybe it shouldn't do this
@@ -55,7 +55,7 @@ import A
 import A
 import B
 """
-    assert Sorter(Style.SMARKETS).sort(input) == output
+    assert Sorter().sort(input) == output
 
 
 def test_stdlib_and_local():
@@ -63,7 +63,7 @@ def test_stdlib_and_local():
 
 import a_mylib
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_stdlib_and_local_bad_order():
@@ -74,7 +74,7 @@ import io
 
 import a_mylib
 """
-    assert Sorter(Style.SMARKETS).sort(input) == output
+    assert Sorter().sort(input) == output
 
 
 def test_newlines_reduced():
@@ -92,7 +92,7 @@ import sys
 
 import A
 """
-    assert Sorter(Style.SMARKETS).sort(input) == output
+    assert Sorter().sort(input) == output
 
 
 def test_comments_between_import_types():
@@ -106,7 +106,7 @@ import a_mylib
 # A comment
 import a_mylib
 """
-    assert Sorter(Style.SMARKETS).sort(input) == output
+    assert Sorter().sort(input) == output
 
 
 def test_comments_between_import_types3():
@@ -115,7 +115,7 @@ def test_comments_between_import_types3():
 # A comment
 import sys
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_comments_between_import_types4():
@@ -124,7 +124,7 @@ def test_comments_between_import_types4():
 
 import sys
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_triple_quote_comments():
@@ -132,7 +132,7 @@ def test_triple_quote_comments():
 \"\"\"Don't break my docstring \"\"\"
 import B
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_triple_quote_in_a_string():
@@ -140,7 +140,7 @@ def test_triple_quote_in_a_string():
 s = '\"\"\"import C\"\"\"'
 import B
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_triple_quote_on_same_line_as_imports():
@@ -149,7 +149,7 @@ stuff
 \"\"\"
 import B
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_triple_quote_with_newlines_and_imports_in_it():
@@ -165,14 +165,14 @@ import C
 \"\"\"
 import B
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_triple_quotes_in_comments():
     input = """import A  # I can put these here behind a comment \"\"\"
 import B
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_triple_quotes_in_string():
@@ -180,7 +180,7 @@ def test_triple_quotes_in_string():
 str = '\"\"\"'
 import B
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_triple_quotes_nasty():
@@ -188,7 +188,7 @@ def test_triple_quotes_nasty():
 str = '\"\"\" & # are used to comment'  # \"\"\" and # are used for comments
 import B
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_from_and_regular():
@@ -197,7 +197,7 @@ def test_from_and_regular():
 import A
 from B import C
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_relative_imports():
@@ -207,7 +207,7 @@ from . import A
 from . import B
 from .A import A
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_dont_remove_double_newline_before_code():
@@ -219,7 +219,7 @@ class Style(Enum):
     GOOGLE = 2
     CRYPTOGRAPHY = 3
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_reorder():
@@ -231,7 +231,7 @@ from enum import Enum
 
 from strings import strip_to_module_name
 """
-    assert Sorter(Style.SMARKETS).sort(input) == output
+    assert Sorter().sort(input) == output
 
 
 def test_import_as():
@@ -239,7 +239,7 @@ def test_import_as():
 
 from strings import strip_to_module_name as stripper
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_import_using_parenthesis():
@@ -252,7 +252,7 @@ def test_import_using_parenthesis():
 """
     output = """from string import find, strip, upper as a_up
 """
-    assert Sorter(Style.SMARKETS).sort(input) == output
+    assert Sorter().sort(input) == output
 
 
 def test_noqa_import():
@@ -260,7 +260,7 @@ def test_noqa_import():
 import Z  # NOQA
 import Y
 """
-    assert Sorter(Style.SMARKETS).sort(input) == input
+    assert Sorter().sort(input) == input
 
 
 def test_split_from_import():

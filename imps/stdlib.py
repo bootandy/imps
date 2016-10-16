@@ -1,12 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-import operator
-import os
-import sys
-
-from contextlib import contextmanager
 from importlib import import_module
+
 from flake8_import_order import STDLIB_NAMES
+
 
 FUTURE = 0
 STDLIB = 1
@@ -50,7 +47,26 @@ RELATIVE = -1
 #     return LOCAL
 
 
-def get_paths(module):
+def get_paths(module, local_list):
+    if not module:
+        raise Exception('No module')
+
+    if module[0] == '.':
+        return RELATIVE
+
+    if module == '__future__':
+        return FUTURE
+
+    if module in local_list:
+        return LOCAL
+
+    if module in STDLIB_NAMES:
+        return STDLIB
+
+    return THIRDPARTY
+
+
+def get_paths_old(module):
     if module and module[0] == '.':
         return RELATIVE
 
@@ -76,70 +92,3 @@ def get_paths(module):
             return STDLIB
         else:
             return LOCAL
-
-
-@contextmanager
-def ignore_site_packages_paths():
-    paths = sys.path[:]
-    # remove working directory so that all
-    # local imports fail
-    if os.getcwd() in sys.path:
-        sys.path.remove(os.getcwd())
-    # remove all third-party paths
-    # so that only stdlib imports will succeed
-    sys.path = list(set(filter(
-        None,
-        filter(lambda i: all(('site-packages' not in i, 'python' in i or 'pypy' in i)),
-               map(operator.methodcaller('lower'), sys.path))
-    )))
-    yield
-    sys.path = paths
-
-
-def get_paths3(module):
-    if module[0] == '.':
-        return RELATIVE
-
-    if module == '__future__':
-        return FUTURE
-
-    # Stop system from unloading itself
-    if module == 'imps':
-        return LOCAL
-
-    if module == 'pytest':
-        return THIRDPARTY
-
-    if module == 'os':  # tests break without this
-        return STDLIB
-
-    with ignore_site_packages_paths():
-        imported_module = sys.modules.pop(module, None)
-        try:
-            import_module(module)
-        except ImportError:
-            pass
-        else:
-            return STDLIB
-        finally:
-            if imported_module:
-                sys.modules[module] = imported_module
-
-    imported_module = sys.modules.pop(module, None)
-    try:
-        import_module(module)
-    except ImportError:
-        return LOCAL
-    else:
-        return THIRDPARTY
-    finally:
-        if imported_module:
-            sys.modules[module] = imported_module
-
-
-# print(get_paths('pytest'))
-# print(get_paths('os'))
-# print(get_paths('sys'))
-# print(get_paths('nothing'))
-# print(get_paths('imps'))
-# print(get_paths('_io'))
