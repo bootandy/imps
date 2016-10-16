@@ -94,4 +94,5 @@ def get_args():
     recurse_down_tree(sorter, args.file)
 
 
-get_args()
+if __name__ == "__main__":
+    get_args()

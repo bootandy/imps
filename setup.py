@@ -8,5 +8,10 @@ setup(
     url='https://github.com/bootandy/imps',
     license="MIT",
     packages=['imps'],
-    scripts=['shell.py']
+    entry_points={
+        'console_scripts': [
+            'imps = imps.shell:main',
+        ],
+    }
+    # scripts=['imps.shell']
 )

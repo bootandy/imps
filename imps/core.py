@@ -6,10 +6,11 @@ from collections import OrderedDict
 from enum import Enum
 
 from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
+
+# Comments inside an import () currently get moved above it
 from imps.strings import (
     get_doc_string,
-    strip_to_module_name, # or like this
-    # We can't handle comments in an import () yet
+    strip_to_module_name,
     strip_to_module_name_from_import
 )
 
@@ -107,6 +108,9 @@ class Sorter():
         else:
             self.lines_before_import.append(l)
 
+    def is_line_an_import(self, l):
+        return re.match(FROM_IMPORT_LINE, l) or re.match(IMPORT_LINE, l)
+
     def split_it(self, text):
         myl = ''
         giant_comment = None
@@ -115,7 +119,7 @@ class Sorter():
 
         for l in text.split('\n'):
 
-            if '\\' in l and l.strip()[-1] == '\\':
+            if '\\' in l and l.strip()[-1] == '\\' and self.is_line_an_import(l):
                 myl = myl + l.strip()[0:-1]
                 backslash_continue = True
                 continue

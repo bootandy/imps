@@ -272,7 +272,7 @@ def test_multiline_parentheses():
 )
 """
     # In future we would like to keep the comments in the correct place
-    output ="""# or like this
+    output = """# or like this
 # We can't handle comments in an import () yet
 from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
 """
@@ -282,8 +282,16 @@ from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_n
 def test_multiline_slash_continue_import():
     input = """import Z, Y, \\
         X, A
+
+def some_func(param_a, \\
+param_b):
+    pass
 """
     output = """import A, X, Y, Z
+
+def some_func(param_a, \\
+param_b):
+    pass
 """
     assert Sorter().sort(input) == output
 
