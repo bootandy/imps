@@ -8,7 +8,7 @@ from enum import Enum
 from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
 from imps.strings import (
     get_doc_string,
-    strip_to_module_name,
+    strip_to_module_name, # or like this
     # We can't handle comments in an import () yet
     strip_to_module_name_from_import
 )
@@ -66,6 +66,13 @@ def split_from_import(s):
     return from_part + " import " + ', '.join(imps)
 
 
+def split_imports(s):
+    _, import_list = re.split('^import\s+', s)
+    imps = import_list.split(',')
+    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=lambda s: s.lower())
+    return "import " + ', '.join(imps)
+
+
 class Sorter():
     def __init__(self, type='s', max_line_length=80, local_imports=None):
         self.type = get_style(type)
@@ -92,7 +99,7 @@ class Sorter():
         if does_line_end_in_noqa(l):
             self.lines_before_import.append(l)
         elif re.match(IMPORT_LINE, l):
-            self.pre_import[l] = self.remove_double_newlines(self.lines_before_import)
+            self.pre_import[split_imports(l)] = self.remove_double_newlines(self.lines_before_import)
             self.lines_before_import = []
         elif re.match(FROM_IMPORT_LINE, l):
             self.pre_from_import[split_from_import(l)] = self.remove_double_newlines(self.lines_before_import)
@@ -104,10 +111,28 @@ class Sorter():
         myl = ''
         giant_comment = None
         in_import_param = False
+        backslash_continue = False
 
         for l in text.split('\n'):
 
+            if '\\' in l and l.strip()[-1] == '\\':
+                myl = myl + l.strip()[0:-1]
+                backslash_continue = True
+                continue
+
+            # Please refactor this loop so we can pull of multiple lines at once to stop this horrible
+            # bool usage
+            if backslash_continue:
+                l = myl + l.strip()
+                backslash_continue = False
+                myl = ''
+
             if in_import_param:
+                if '#' in l:
+                    pre_hash, post_hash = l[0:l.find('#')], l[l.find('#'):]
+                    self.lines_before_import.append(post_hash)
+                    l = pre_hash
+
                 myl += l.strip()
                 if ')' in myl:
                     myl = myl.replace('(', '')

@@ -23,10 +23,13 @@ def recurse_down_tree(sorter, path):
     if path[-3:] == '.py':
         run(sorter, path)
     else:
-        for subdir, dirs, files in os.walk(path):
+        for subdir, dirs, files in os.walk(path, topdown=False):
+            if '/.' in subdir:
+                continue
+
             for file in files:
-                file_path = os.path.join(subdir, file)
-                if file_path[-3:] == '.py':
+                if file[-3:] == '.py':
+                    file_path = os.path.join(subdir, file)
                     run(sorter, file_path)
 
 

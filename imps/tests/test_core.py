@@ -263,6 +263,31 @@ import Y
     assert Sorter().sort(input) == input
 
 
+def test_multiline_parentheses():
+    input = """from imps.strings import (
+    get_doc_string,
+    strip_to_module_name, # or like this
+    # We can't handle comments in an import () yet
+    strip_to_module_name_from_import
+)
+"""
+    # In future we would like to keep the comments in the correct place
+    output ="""# or like this
+# We can't handle comments in an import () yet
+from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
+"""
+    assert Sorter().sort(input) == output
+
+
+def test_multiline_slash_continue_import():
+    input = """import Z, Y, \\
+        X, A
+"""
+    output = """import A, X, Y, Z
+"""
+    assert Sorter().sort(input) == output
+
+
 def test_split_from_import():
     assert split_from_import('from A import B') == 'from A import B'
 
