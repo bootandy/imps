@@ -9,6 +9,7 @@ from imps.core import Sorter
 
 
 def run(sorter, file_name):
+    # Why not send array of lines in if that's what we use?
     data = ''
     for line in file(file_name):
         data += line

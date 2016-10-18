@@ -112,64 +112,56 @@ class Sorter():
         return re.match(FROM_IMPORT_LINE, l) or re.match(IMPORT_LINE, l)
 
     def split_it(self, text):
-        myl = ''
-        giant_comment = None
-        in_import_param = False
-        backslash_continue = False
+        lines = text.split('\n')
+        data = ''
+        i = -1
+        while i < len(lines) - 1:
+            i += 1
+            data += lines[i]
 
-        for l in text.split('\n'):
-
-            if '\\' in l and l.strip()[-1] == '\\' and self.is_line_an_import(l):
-                myl = myl + l.strip()[0:-1]
-                backslash_continue = True
+            if '\\' in data and data.strip()[-1] == '\\' and self.is_line_an_import(lines[i]):
+                data = data.strip()[0:-1]
                 continue
 
-            # Please refactor this loop so we can pull of multiple lines at once to stop this horrible
-            # bool usage
-            if backslash_continue:
-                l = myl + l.strip()
-                backslash_continue = False
-                myl = ''
+            doc_string_points = get_doc_string(data)
 
-            if in_import_param:
-                if '#' in l:
-                    pre_hash, post_hash = l[0:l.find('#')], l[l.find('#'):]
-                    self.lines_before_import.append(post_hash)
-                    l = pre_hash
+            if len(doc_string_points) % 2 == 0:
+                if re.match(FROM_IMPORT_LINE_WITH_PARAN, data):
+                    while True:
+                        i += 1
+                        l = lines[i]
+                        if '#' in l:
+                            pre_hash, post_hash = l[0:l.find('#')], l[l.find('#'):]
+                            self.lines_before_import.append(post_hash)
+                            l = pre_hash
 
-                myl += l.strip()
-                if ')' in myl:
-                    myl = myl.replace('(', '')
-                    myl = myl.replace(')', '')
-                    self.process_line(myl)
-                    in_import_param = False
-                    myl = ''
+                        data += l.strip()
+                        if ')' in l:
+                            data = data.replace('(', '')
+                            data = data.replace(')', '')
+                            break
 
-            elif not giant_comment:
-                doc_string_points = get_doc_string(l)
-
-                if len(doc_string_points) % 2 == 0:
-                    if re.match(FROM_IMPORT_LINE_WITH_PARAN, l):
-                        in_import_param = True
-                        myl = l.rstrip()
-                    else:
-                        self.process_line(l)
-                else:
-                    myl = l.rstrip() + '\n'
-                    giant_comment = doc_string_points[-1][1]
+                self.process_line(data)
+                data = ""
             else:
-                comment_point = l.find(giant_comment)
-                if comment_point != -1:
-                    myl += l[0:comment_point + 3]
-                    self.process_line(myl)
-                    giant_comment = None
+                giant_comment = doc_string_points[-1][1]
 
-                    # Doesnt work if we start a triple comment here again.
-                    rest = l[comment_point + 3:]
-                    if rest:
-                        self.process_line(rest)
-                else:
-                    myl += l.rstrip() + '\n'
+                while True:
+                    i += 1
+                    data += '\n'
+                    comment_point = lines[i].find(giant_comment)
+                    if comment_point != -1:
+                        data += lines[i][0:comment_point + 3]
+                        self.process_line(data)
+
+                        # Doesnt work if we start a triple comment here again.
+                        data = lines[i][comment_point + 3:]
+                        if data:
+                            # want to: GOTO start of this loop
+                            self.process_line(data)
+                        break
+                    else:
+                        data += lines[i].strip()
 
     # -----------------rebuilders:-------------
     def rebuild(self):
