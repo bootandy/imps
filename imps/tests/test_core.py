@@ -276,7 +276,7 @@ def test_multiline_parentheses():
 # We can't handle comments in an import () yet
 from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
 """
-    assert Sorter().sort(input) == output
+    assert Sorter(max_line_length=110).sort(input) == output
 
 
 def test_multiline_slash_continue_import():
@@ -316,3 +316,14 @@ def test_split_from_import_complex():
 
 def test_split_from_import_with_as():
     assert split_from_import('from A   import this as that,   A,Z') == 'from A import A, this as that, Z'
+
+
+def test_split_core_import():
+    s = Sorter(max_line_length=40)
+    ans = s.split_core_import("import alpha.alpha.alpha, beta.beta.beta, gamma.gamma.gamma")
+
+    # My editor turns tabs into spaces so I can not do a literal compare
+    assert 'alpha.alpha.alpha,\n' in ans
+    assert 'gamma.gamma.gamma\n' in ans
+    assert ans.find('import (\n') == 0
+    assert ans.find(')') == len(ans) - 1

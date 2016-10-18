@@ -8,11 +8,7 @@ from enum import Enum
 from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
 
 # Comments inside an import () currently get moved above it
-from imps.strings import (
-    get_doc_string,
-    strip_to_module_name,
-    strip_to_module_name_from_import
-)
+from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
 
 
 IMPORT_LINE = r'^import\s.*'
@@ -90,7 +86,7 @@ def classify_imports(imports, strip_to_module, local_imports):
 class Sorter():
     def __init__(self, type='s', max_line_length=80, local_imports=None):
         self.type = get_style(type)
-        self.max_line_length = max_line_length
+        self.max_line_length = int(max_line_length)
         self.local_imports = local_imports or []
 
     def sort(self, lines):
@@ -223,7 +219,7 @@ class Sorter():
         output = output[1:]
         return output + '\n'.join(self.lines_before_import)
 
-    def build(self, imp, pre_imp):
+    def build(self, core_import, pre_imp):
         output = ""
         if self.first_import:
             found_double_newline = False
@@ -243,5 +239,14 @@ class Sorter():
         if self.first_import:
             self.first_import = False
 
-        output += imp + '\n'
+        output += self.split_core_import(core_import) + '\n'
         return output
+
+    def split_core_import(self, core_import):
+        if len(core_import) <= self.max_line_length:
+            return core_import
+
+        result = ',\n\t'.join([s.strip() for s in core_import.split(',')])
+        result = re.sub(r'import\s+', 'import (\n\t', result)
+        result += "\n)"
+        return result
