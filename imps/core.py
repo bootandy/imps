@@ -84,10 +84,11 @@ def classify_imports(imports, strip_to_module, local_imports):
 
 
 class Sorter():
-    def __init__(self, type='s', max_line_length=80, local_imports=None):
+    def __init__(self, type='s', max_line_length=80, local_imports=None, indent="    "):
         self.type = get_style(type)
         self.max_line_length = int(max_line_length)
         self.local_imports = local_imports or []
+        self.indent = indent
 
     def sort(self, lines):
         self.lines_before_import = []
@@ -246,7 +247,7 @@ class Sorter():
         if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import):
             return core_import
 
-        result = ',\n\t'.join([s.strip() for s in core_import.split(',')])
-        result = re.sub(r'import\s+', 'import (\n\t', result)
+        result = (',\n' + self.indent).join([s.strip() for s in core_import.split(',')])
+        result = re.sub(r'import\s+', 'import (\n' + self.indent, result)
         result += "\n)"
         return result
