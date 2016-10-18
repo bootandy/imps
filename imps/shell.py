@@ -76,7 +76,7 @@ def setup_vars(config, args):
     return style, max_line_length, application_import_names.split(' ')
 
 
-def get_args():
+def main():
     parser = argparse.ArgumentParser(description='Sort your python')
 
     parser.add_argument('file', nargs='?', default=os.getcwd())
@@ -96,4 +96,4 @@ def get_args():
 
 
 if __name__ == "__main__":
-    get_args()
+    main()
