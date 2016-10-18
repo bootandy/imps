@@ -74,6 +74,19 @@ def split_imports(s):
     return "import " + ', '.join(imps)
 
 
+def classify_imports(imports, strip_to_module, local_imports):
+    result = OrderedDict()
+    result[FUTURE] = []
+    result[STDLIB] = []
+    result[THIRDPARTY] = []
+    result[LOCAL] = []
+    result[RELATIVE] = []
+
+    for i in imports:
+        result[get_paths(strip_to_module(i), local_imports)].append(i)
+    return result
+
+
 class Sorter():
     def __init__(self, type='s', max_line_length=80, local_imports=None):
         self.type = get_style(type)
@@ -163,7 +176,7 @@ class Sorter():
                     else:
                         data += lines[i]
 
-    # -----------------rebuilders:-------------
+    # -----------------rebuilders: Put in different class?-------------
     def rebuild(self):
         imports_by_type = classify_imports(self.pre_import.keys(), strip_to_module_name, self.local_imports)
         from_imports_by_type = classify_imports(
@@ -232,16 +245,3 @@ class Sorter():
 
         output += imp + '\n'
         return output
-
-
-def classify_imports(imports, strip_to_module, local_imports):
-    result = OrderedDict()
-    result[FUTURE] = []
-    result[STDLIB] = []
-    result[THIRDPARTY] = []
-    result[LOCAL] = []
-    result[RELATIVE] = []
-
-    for i in imports:
-        result[get_paths(strip_to_module(i), local_imports)].append(i)
-    return result
