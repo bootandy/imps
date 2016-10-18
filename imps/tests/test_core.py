@@ -286,12 +286,22 @@ def test_multiline_slash_continue_import():
 def some_func(param_a, \\
 param_b):
     pass
+'''
+def some_func(param_a, \\
+param_b):
+    pass
+'''
 """
     output = """import A, X, Y, Z
 
 def some_func(param_a, \\
 param_b):
     pass
+'''
+def some_func(param_a, \\
+param_b):
+    pass
+'''
 """
     assert Sorter().sort(input) == output
 

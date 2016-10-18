@@ -161,7 +161,7 @@ class Sorter():
                             self.process_line(data)
                         break
                     else:
-                        data += lines[i].strip()
+                        data += lines[i]
 
     # -----------------rebuilders:-------------
     def rebuild(self):
