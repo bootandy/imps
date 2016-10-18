@@ -243,7 +243,7 @@ class Sorter():
         return output
 
     def split_core_import(self, core_import):
-        if len(core_import) <= self.max_line_length:
+        if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import):
             return core_import
 
         result = ',\n\t'.join([s.strip() for s in core_import.split(',')])

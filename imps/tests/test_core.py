@@ -327,3 +327,9 @@ def test_split_core_import():
     assert 'gamma.gamma.gamma\n' in ans
     assert ans.find('import (\n') == 0
     assert ans.find(')') == len(ans) - 1
+
+
+def test_split_core_import_noqa():
+    s = Sorter(max_line_length=40)
+    input = "import alpha.alpha.alpha, beta.beta.beta, gamma.gamma.gamma  # NOQA"
+    assert s.split_core_import(input) == input
