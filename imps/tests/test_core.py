@@ -306,6 +306,18 @@ param_b):
     assert Sorter().sort(input) == output
 
 
+def test_triple_quotes():
+    # FIX THIS
+    input = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
+-21947406894019109:5730726,5730725""")
+'''
+    output = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
+-21947406894019109:5730726,5730725"""
+)
+'''
+    assert Sorter().sort(input) == output
+
+
 def test_split_from_import():
     assert split_from_import('from A import B') == 'from A import B'
 

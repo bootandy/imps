@@ -114,6 +114,7 @@ class ReadInput():
                         if data:
                             # want to: GOTO start of this loop
                             self.process_line(data)
+                            data = ""
                         break
                     else:
                         data += lines[i]
