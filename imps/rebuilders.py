@@ -9,6 +9,7 @@ from imps.strings import strip_to_module_name, strip_to_module_name_from_import
 
 
 NOQA = r'.*\s*\#\sNOQA\s*$'  # wont work if NOQA is inside a triple string.
+FROM_IMPORT_LINE = r'^from\s.*import\s.*'
 
 
 def does_line_end_in_noqa(line):
@@ -36,6 +37,9 @@ def get_core_import(imp):
 
 def sorter(s):
     s = s.replace('.', chr(ord('z') + 1))
+    # We only alphabetically sort the from part of the imports in style: from X import Y
+    if re.match(FROM_IMPORT_LINE, s):
+        return s[0:s.find(' import ')].lower() + s[s.find(' import '):]
     return s.lower()
 
 
