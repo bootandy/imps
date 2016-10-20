@@ -143,15 +143,6 @@ import B
     assert Sorter().sort(input) == input
 
 
-def test_triple_quote_on_same_line_as_imports():
-    input = """import A \"\"\"
-stuff
-\"\"\"
-import B
-"""
-    assert Sorter().sort(input) == input
-
-
 def test_triple_quote_with_newlines_and_imports_in_it():
     input = """import A
 
@@ -186,6 +177,15 @@ import B
 def test_triple_quotes_nasty():
     input = """import A
 str = '\"\"\" & # are used to comment'  # \"\"\" and # are used for comments
+import B
+"""
+    assert Sorter().sort(input) == input
+
+
+def test_multiple_triple_quotes():
+    input = """import A
+\"\"\" ''' \"\"\" ''' \# ''' \"\"\"
+ new line \"\"\"
 import B
 """
     assert Sorter().sort(input) == input
@@ -307,13 +307,11 @@ param_b):
 
 
 def test_triple_quotes():
-    # FIX THIS
     input = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
 -21947406894019109:5730726,5730725""")
 '''
     output = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
--21947406894019109:5730726,5730725"""
-)
+-21947406894019109:5730726,5730725""")
 '''
     assert Sorter().sort(input) == output
 

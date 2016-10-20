@@ -80,6 +80,7 @@ class ReadInput():
 
             doc_string_points = get_doc_string(data)
 
+            # If no doc_strings found (or doc string open and closed on same line):
             if len(doc_string_points) % 2 == 0:
                 if re.match(FROM_IMPORT_LINE_WITH_PARAN, data):
                     while True:
@@ -106,16 +107,17 @@ class ReadInput():
                     data += '\n'
                     comment_point = lines[i].find(giant_comment)
                     if comment_point != -1:
-                        data += lines[i][0:comment_point + 3]
-                        self.process_line(data)
+                        after_comment = lines[i][comment_point + 3:]
+                        doc_string_points = get_doc_string(after_comment)
 
-                        # Doesnt work if we start a triple comment here again.
-                        data = lines[i][comment_point + 3:]
-                        if data:
-                            # want to: GOTO start of this loop
+                        if len(doc_string_points) % 2 == 0:
+                            data += lines[i]
                             self.process_line(data)
                             data = ""
-                        break
+                            break
+                        else:
+                            giant_comment = doc_string_points[-1][1]
+
                     else:
                         data += lines[i]
         return self.pre_import, self.pre_from_import, self.lines_before_import
