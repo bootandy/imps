@@ -22,8 +22,13 @@ from pytest import *
 from pytest import capture
 from pytest import compat, config
 
-import imps
-from imps import *
+from common.interfaces import Config
+from common.rest.decorators import jsonify
+from han.db import Database
+from winners.server.db_access import (
+    acknowledge_winner_exposure_for_market,
+    get_acknowledged_winner_exposures_for_market,
+)
 
 from . import A
 from . import B
@@ -35,7 +40,7 @@ from ..A import A
 from ..B import B
 '''
 
-    assert Sorter('s', 80, ['imps']).sort(input) == input
+    assert Sorter('s', 80, ['common', 'winners', 'han']).sort(input) == input
 
 
 def test_smarkets_style_same_import_name():

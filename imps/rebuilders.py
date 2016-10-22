@@ -5,8 +5,6 @@ from collections import OrderedDict
 
 from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
 
-from imps.strings import strip_to_module_name, strip_to_module_name_from_import
-
 
 NOQA = r'.*\s*\#\sNOQA\s*$'  # wont work if NOQA is inside a triple string.
 FROM_IMPORT_LINE = r'^from\s.*import\s.*'
@@ -16,7 +14,7 @@ def does_line_end_in_noqa(line):
     return re.match(NOQA, line)
 
 
-def classify_imports(imports, strip_to_module, local_imports):
+def classify_imports(imports, local_imports):
     result = OrderedDict()
     result[FUTURE] = []
     result[STDLIB] = []
@@ -25,7 +23,8 @@ def classify_imports(imports, strip_to_module, local_imports):
     result[RELATIVE] = []
 
     for i in imports:
-        result[get_paths(strip_to_module(i), local_imports)].append(i)
+        result[get_paths(i, local_imports)].append(i)
+
     return result
 
 
@@ -108,10 +107,8 @@ class Rebuilder():
         self.indent = indent
 
     def rebuild(self, pre_import, pre_from_import, remaining_lines):
-        imports_by_type = classify_imports(pre_import.keys(), strip_to_module_name, self.local_imports)
-        from_imports_by_type = classify_imports(
-            pre_from_import.keys(), strip_to_module_name_from_import, self.local_imports
-        )
+        imports_by_type = classify_imports(pre_import.keys(), self.local_imports)
+        from_imports_by_type = classify_imports(pre_from_import.keys(), self.local_imports)
         output = ""
 
         for type, imports in imports_by_type.items():
@@ -151,7 +148,8 @@ class Rebuilder():
         if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import):
             return core_import
 
+        # To turn a long line of imports into a multiline import using parenthesis
         result = (',\n' + self.indent).join([s.strip() for s in core_import.split(',')])
         result = re.sub(r'import\s+', 'import (\n' + self.indent, result)
-        result += "\n)"
+        result += ",\n)"
         return result
