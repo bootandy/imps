@@ -3,4 +3,8 @@ language: python
 python:
     - "2.7"
 install: pip install tox-travis
-script: tox
+env:
+    - REQUIREMENTS=tests
+    - REQUIREMENTS=flake8
+script:
+    - tox -e $REQUIREMENTS
