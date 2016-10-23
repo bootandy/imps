@@ -349,6 +349,14 @@ from gateways.bettingvery.server_module import *
     assert Sorter().sort(input) == input
 
 
+def test_file_begins_with_docstring_is_ok():
+    input = '''"""Please don't destroy my docstring"""
+
+from __future__ import absolute_import, division
+'''
+    assert Sorter().sort(input) == input
+
+
 def test_split_from_import():
     assert split_from_import('from A import B') == 'from A import B'
 

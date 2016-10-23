@@ -135,7 +135,7 @@ class Rebuilder():
 
         output += relative_builder_func(from_imports_by_type, pre_from_import, self.build)
 
-        output = output[1:]
+        output = output.lstrip()
         return output + '\n'.join(remaining_lines)
 
     #  Can we make this a func not a method
