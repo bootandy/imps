@@ -6,7 +6,8 @@ setup(
     description='Python utility to sort Python imports',
     author='Andy Boot',
     url='https://github.com/bootandy/imps',
-    license="MIT",
+    license="Apache",
+    install_requires=['flake8-import-order', 'configparser'],
     packages=['imps'],
     entry_points={
         'console_scripts': [
