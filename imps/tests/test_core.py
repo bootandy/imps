@@ -223,7 +223,7 @@ class Style(Enum):
     assert Sorter().sort(input) == input
 
 
-def test_reorder():
+def test_reorder_from_imports():
     input = """from strings import strip_to_module_name
 
 from enum import Enum
@@ -324,6 +324,21 @@ def test_triple_quotes():
 -21947406894019109:5730726,5730725""")
 '''
     assert Sorter().sort(input) == output
+
+
+def test_no_state_stays_in_sorting_object():
+    """
+    Sorter kept previous state at one stage causing it to always append new
+    files instead of creating a new file. Dont want that happening again.
+    """
+    input = '''from A import B
+'''
+    s = Sorter()
+    assert s.sort(input) == input
+
+    input2 = '''from B import A
+'''
+    assert s.sort(input2) == input2
 
 
 def test_split_from_import():
