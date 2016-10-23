@@ -1,4 +1,5 @@
 from __future__ import absolute_import, division, print_function
+import pytest
 
 from imps.core import Sorter, split_from_import
 
@@ -243,7 +244,6 @@ from strings import strip_to_module_name as stripper
 
 
 def test_import_using_parenthesis():
-    # TODO: Will probably change this later when I figure out param parsing better
     input = """from string import (
     upper as a_up,
     strip,
@@ -277,6 +277,16 @@ def test_multiline_parentheses():
 from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
 """
     assert Sorter(max_line_length=110).sort(input) == output
+
+
+@pytest.mark.skip("this doesnt work yet")
+def test_multiline_parentheses_with_comment():
+    input = """from imps.strings import ( # A comment
+    get_doc_string,
+    strip_to_module_name,
+)
+"""
+    assert Sorter(max_line_length=40).sort(input) == input
 
 
 def test_multiline_slash_continue_import():

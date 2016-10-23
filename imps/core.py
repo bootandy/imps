@@ -84,6 +84,7 @@ class ReadInput():
             # If no doc_strings found (or doc string open and closed on same line):
             if len(doc_string_points) % 2 == 0:
                 if re.match(FROM_IMPORT_LINE_WITH_PARAN, data):
+
                     while True:
                         i += 1
                         l = lines[i]
