@@ -73,7 +73,7 @@ def setup_vars(config, args):
     if not application_import_names:
         application_import_names = config.get('flake8', 'application-import-names', fallback='')
 
-    return style, max_line_length, application_import_names.split(' ')
+    return style, max_line_length, application_import_names.split(',')
 
 
 def main():
