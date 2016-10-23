@@ -341,6 +341,14 @@ def test_no_state_stays_in_sorting_object():
     assert s.sort(input2) == input2
 
 
+def test_underscores_in_module_names():
+    input = '''from gateways.betting.gateway import *
+from gateways.betting_ng.server_module import *
+from gateways.bettingvery.server_module import *
+'''
+    assert Sorter().sort(input) == input
+
+
 def test_split_from_import():
     assert split_from_import('from A import B') == 'from A import B'
 

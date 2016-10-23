@@ -34,8 +34,15 @@ def get_core_import(imp):
     return re.sub('\s+.*', '', imp)
 
 
-def sorter(s):
+def sorter_relative_imports(s):
     s = s.replace('.', chr(ord('z') + 1))
+    s = s.replace('_', chr(ord('A') - 1))
+    return s.lower()
+
+
+def sorter(s):
+    s = s.replace('.', chr(ord('A') - 2))
+    s = s.replace('_', chr(ord('A') - 1))
     # We only alphabetically sort the from part of the imports in style: from X import Y
     if re.match(FROM_IMPORT_LINE, s):
         return s[0:s.find(' import ')].lower() + s[s.find(' import '):]
@@ -59,9 +66,16 @@ def get_builder_func(s):
         raise Exception('Unknown style type %s', s)
 
 
+def relative_builder_func(from_imports, pre_from_import, build):
+    output = ""
+    for imp in sorted(from_imports[RELATIVE], key=sorter_relative_imports):
+        output += build(imp, pre_from_import[imp])
+    return output
+
+
 def smarkets_builder(imports, from_imports, type, pre_import, pre_from_import, build):
     output = ""
-    for imp in sorted(imports, key=sorter):
+    for imp in sorted(imports[type], key=sorter):
         output += build(imp, pre_import[imp])
 
     for imp in sorted(from_imports[type], key=sorter):
@@ -71,7 +85,7 @@ def smarkets_builder(imports, from_imports, type, pre_import, pre_from_import, b
 
 def google_builder(imports, from_imports, type, pre_import, pre_from_import, build):
     output = ""
-    for imp in sorted(imports + from_imports[type], key=sorter_unify_import_and_from):
+    for imp in sorted(imports[type] + from_imports[type], key=sorter_unify_import_and_from):
         output += build(imp, pre_import.get(imp, pre_from_import.get(imp)))
     return output
 
@@ -79,14 +93,14 @@ def google_builder(imports, from_imports, type, pre_import, pre_from_import, bui
 def crypto_builder(imports, from_imports, type, pre_import, pre_from_import, build):
     output = ""
     if type in (STDLIB, FUTURE, RELATIVE):
-        for imp in sorted(imports, key=sorter):
+        for imp in sorted(imports[type], key=sorter):
             output += build(imp, pre_import[imp])
 
         for imp in sorted(from_imports[type], key=sorter):
             output += build(imp, pre_from_import[imp])
     else:
         last_imp = ''
-        for imp in sorted(imports + from_imports[type], key=sorter_unify_import_and_from):
+        for imp in sorted(imports[type] + from_imports[type], key=sorter_unify_import_and_from):
             if not last_imp or not get_core_import(imp).startswith(last_imp):
                 if last_imp:
                     if imp in pre_import:
@@ -111,11 +125,15 @@ class Rebuilder():
         from_imports_by_type = classify_imports(pre_from_import.keys(), self.local_imports)
         output = ""
 
-        for type, imports in imports_by_type.items():
+        types = imports_by_type.keys()
+        types.remove(RELATIVE)
+        for type in types:
             self.first_import = True
             output += self.builder_func(
-                imports, from_imports_by_type, type, pre_import, pre_from_import, self.build
+                imports_by_type, from_imports_by_type, type, pre_import, pre_from_import, self.build
             )
+
+        output += relative_builder_func(from_imports_by_type, pre_from_import, self.build)
 
         output = output[1:]
         return output + '\n'.join(remaining_lines)
