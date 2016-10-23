@@ -37,7 +37,7 @@ class Sorter():
 
 
 class ReadInput():
-    def __init__(self):
+    def clean(self):
         self.lines_before_import = []
         self.pre_import = {}
         self.pre_from_import = {}
@@ -67,6 +67,7 @@ class ReadInput():
         return re.match(FROM_IMPORT_LINE, l) or re.match(IMPORT_LINE, l)
 
     def split_it(self, text):
+        self.clean()
         lines = text.split('\n')
         data = ''
         i = -1
