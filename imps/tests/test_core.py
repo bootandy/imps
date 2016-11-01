@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
-import pytest
 
-from imps.core import Sorter, split_from_import
+from imps.core import sort_from_import, Sorter
 
 
 def test_base():
@@ -268,25 +267,41 @@ def test_multiline_parentheses():
     get_doc_string,
     strip_to_module_name, # or like this
     # We can't handle comments in an import () yet
-    strip_to_module_name_from_import
+    strip_to_module_name_from_import,
 )
 """
-    # In future we would like to keep the comments in the correct place
-    output = """# or like this
-# We can't handle comments in an import () yet
-from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
-"""
-    assert Sorter(max_line_length=110).sort(input) == output
+    assert Sorter(max_line_length=110).sort(input) == input
 
 
-@pytest.mark.skip("this doesnt work yet")
-def test_multiline_parentheses_with_comment():
+def test_multiline_parentheses_with_comment_on_line_one():
     input = """from imps.strings import ( # A comment
     get_doc_string,
     strip_to_module_name,
 )
 """
-    assert Sorter(max_line_length=40).sort(input) == input
+    output = """from imps.strings import (
+    # A comment
+    get_doc_string,
+    strip_to_module_name,
+)
+"""
+    assert Sorter(max_line_length=40).sort(input) == output
+
+
+def test_multiline_parentheses_will_sort():
+    input = """from imps.strings import (
+    get_doc_string,
+    strip_to_module_name, # A comment
+)
+from imps.alpha import stuff
+"""
+    output = """from imps.alpha import stuff
+from imps.strings import (
+    get_doc_string,
+    strip_to_module_name, # A comment
+)
+"""
+    assert Sorter(max_line_length=40).sort(input) == output
 
 
 def test_multiline_slash_continue_import():
@@ -358,12 +373,12 @@ from __future__ import absolute_import, division
 
 
 def test_split_from_import():
-    assert split_from_import('from A import B') == 'from A import B'
+    assert sort_from_import('from A import B') == 'from A import B'
 
 
 def test_split_from_import_complex():
-    assert split_from_import('from A.B   import Z,   F, W') == 'from A.B import F, W, Z'
+    assert sort_from_import('from A.B   import Z,   F, W') == 'from A.B import F, W, Z'
 
 
 def test_split_from_import_with_as():
-    assert split_from_import('from A   import this as that,   A,Z') == 'from A import A, this as that, Z'
+    assert sort_from_import('from A   import this as that,   A,Z') == 'from A import A, this as that, Z'

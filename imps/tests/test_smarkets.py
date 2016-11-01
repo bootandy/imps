@@ -43,11 +43,11 @@ from ..B import B
     assert Sorter('s', 80, ['common', 'winners', 'han']).sort(input) == input
 
 
-def test_smarkets_style_same_import_name():
+def test_smarkets_style_from_import_capitals_are_not_lowered():
     input = '''from __future__ import absolute_import, division, print_function
 
 from imps.strings import AAAA
-from imps.strings import TRIPLE_SINGLE
+from imps.strings import ZZZZ
 from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
 '''
 # Possible alternative:

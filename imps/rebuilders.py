@@ -8,6 +8,7 @@ from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
 
 NOQA = r'.*\s*\#\sNOQA\s*$'  # wont work if NOQA is inside a triple string.
 FROM_IMPORT_LINE = r'^from\s.*import\s.*'
+FROM_IMPORT_PARAN_LINE = r'^from\s.*import\s\(.*'
 
 
 def does_line_end_in_noqa(line):
@@ -44,8 +45,13 @@ def sorter(s):
     s = s.replace('.', chr(ord('A') - 2))
     s = s.replace('_', chr(ord('A') - 1))
     # We only alphabetically sort the from part of the imports in style: from X import Y
+    if re.match(FROM_IMPORT_PARAN_LINE, s):
+        s = re.sub('\#.*\n', '', s)
+        s = re.sub('\s+', ' ', s)
+        s = s[0:s.find(' import ')].lower() + ' import' + s[s.find('(') + 1:s.find(')')]
+        return s.strip()
     if re.match(FROM_IMPORT_LINE, s):
-        return s[0:s.find(' import ')].lower() + s[s.find(' import '):]
+        return (s[0:s.find(' import ')].lower() + s[s.find(' import '):]).strip()
     return s.lower()
 
 
@@ -163,7 +169,8 @@ class Rebuilder():
         return output
 
     def split_core_import(self, core_import):
-        if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import):
+        if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import) or (
+                '(' in core_import and ')' in core_import):
             return core_import
 
         # To turn a long line of imports into a multiline import using parenthesis
