@@ -16,14 +16,14 @@ FROM_IMPORT_LINE_WITH_PARAN = r'^from\s.*import\s.*\('
 
 # We do sorting here early for a single line with multiple imports.
 def sort_from_import(s):
-    from_part, import_list = re.split('\s+import\s+', s)
+    from_part, import_list = re.split('\s+import\s+', s, 1)
     imps = import_list.split(',')
     imps = sorted(set([i.strip() for i in imps if i.strip()]), key=lambda s: s.lower())
     return from_part + " import " + ', '.join(imps)
 
 
 def split_imports(s):
-    _, import_list = re.split('^import\s+', s)
+    _, import_list = re.split('^import\s+', s, 1)
     imps = import_list.split(',')
     imps = sorted(set([i.strip() for i in imps if i.strip()]), key=lambda s: s.lower())
     return "import " + ', '.join(imps)

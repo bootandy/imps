@@ -382,3 +382,8 @@ def test_split_from_import_complex():
 
 def test_split_from_import_with_as():
     assert sort_from_import('from A   import this as that,   A,Z') == 'from A import A, this as that, Z'
+
+
+def test_split_from_import_with_import_in_comment():
+    test = sort_from_import('from os.path import abspath, dirname, join  # noqa # import order')
+    assert test
