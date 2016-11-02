@@ -12,7 +12,7 @@ FROM_IMPORT_PARAN_LINE = r'^from\s.*import\s\(.*'
 
 
 def does_line_end_in_noqa(line):
-    return re.match(NOQA, line)
+    return re.match(NOQA, line, re.IGNORECASE)
 
 
 def classify_imports(imports, local_imports):

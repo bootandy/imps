@@ -256,7 +256,7 @@ def test_import_using_parenthesis():
 
 def test_noqa_import():
     input = """import X
-import Z  # NOQA
+import Z  # noQA
 import Y
 """
     assert Sorter().sort(input) == input
