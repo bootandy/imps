@@ -141,7 +141,7 @@ class ReadInput():
             i += 1
             data += lines[i]
 
-            if '\\' in data and data.strip()[-1] == '\\' and self.is_line_an_import(lines[i]):
+            if '\\' in data and data.strip()[-1] == '\\' and self.is_line_an_import(data):
                 data = data.strip()[0:-1]
                 continue
 

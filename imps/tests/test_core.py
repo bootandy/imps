@@ -306,7 +306,8 @@ from imps.strings import (
 
 def test_multiline_slash_continue_import():
     input = """import Z, Y, \\
-        X, A
+        X, A, \\
+        B
 
 def some_func(param_a, \\
 param_b):
@@ -317,7 +318,7 @@ param_b):
     pass
 '''
 """
-    output = """import A, X, Y, Z
+    output = """import A, B, X, Y, Z
 
 def some_func(param_a, \\
 param_b):
