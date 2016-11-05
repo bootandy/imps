@@ -2,10 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from imps.rebuilders import (
-    does_line_end_in_noqa,
-    Rebuilder
-)
+from imps.rebuilders import does_line_end_in_noqa, Rebuilder
 
 from imps.strings import get_doc_string
 

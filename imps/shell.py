@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import argparse
-
 import configparser
 import os
 
@@ -20,31 +19,34 @@ def run(sorter, file_name):
             f.write(output)
 
 
-def recurse_down_tree(sorter, path):
-    if path[-3:] == '.py':
-        run(sorter, path)
+def recurse_down_tree(args, path, sorter=None):
+
+    if os.path.isfile(path):
+        run(get_sorter(args, path), path)
     else:
-        for subdir, dirs, files in os.walk(path, topdown=False):
-            if '/.' in subdir:
-                continue
+        files = os.listdir(path)
+        if 'setup.cfg' in files or sorter is None:
+            sorter = get_sorter(args, path)
+        for f in files:
+            if os.path.isfile(f) and f[-3:] == '.py':
+                run(sorter, f)
+            elif not os.path.isfile(f) and '.' not in f:
+                recurse_down_tree(args, os.path.join(path, f), sorter)
 
-            for file in files:
-                if file[-3:] == '.py':
-                    file_path = os.path.join(subdir, file)
-                    run(sorter, file_path)
 
-
-def get_config(path):
+def get_sorter(args, path):
     if os.path.isfile(path):
         path, _ = os.path.split(path)
+    conf = read_config(os.path.abspath(path))
+    style, max_line_length, local_imports = setup_vars(conf, args)
+    return Sorter(style, max_line_length, local_imports)
 
-    path = os.path.abspath(path)
+
+def read_config(path):
     config = configparser.ConfigParser()
-
     while not config.sections() and path != '/':
         config.read(os.path.join(path, 'setup.cfg'))
         path, _ = os.path.split(path)
-
     return config
 
 
@@ -87,12 +89,7 @@ def main():
 
     args = parser.parse_args()
 
-    config = get_config(args.file)
-    style, max_line_length, local_imports = setup_vars(config, args)
-
-    sorter = Sorter(style, max_line_length, local_imports)
-
-    recurse_down_tree(sorter, args.file)
+    recurse_down_tree(args, args.file)
 
 
 if __name__ == "__main__":
