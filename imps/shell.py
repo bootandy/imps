@@ -18,7 +18,6 @@ def run(sorter, file_name):
 
 
 def recurse_down_tree(args, path, sorter=None):
-
     if os.path.isfile(path):
         run(get_sorter(args, path), path)
     else:
@@ -26,8 +25,8 @@ def recurse_down_tree(args, path, sorter=None):
         if 'setup.cfg' in files or sorter is None:
             sorter = get_sorter(args, path)
         for f in files:
-            if os.path.isfile(f) and f[-3:] == '.py':
-                run(sorter, f)
+            if os.path.isfile(os.path.join(path, f)) and f[-3:] == '.py':
+                run(sorter, os.path.join(path, f))
             elif not os.path.isfile(f) and '.' not in f:
                 recurse_down_tree(args, os.path.join(path, f), sorter)
 
