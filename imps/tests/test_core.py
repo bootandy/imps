@@ -3,14 +3,6 @@ from __future__ import absolute_import, division, print_function
 from imps.core import sort_from_import, Sorter
 
 
-def test_base():
-    input = """import X
-import Y
-import Z
-"""
-    assert Sorter().sort(input) == input
-
-
 def test_base_bad_order():
     input = """import Z
 import X
@@ -24,14 +16,16 @@ import Z
 
 
 def test_base_more_spaces():
-    input = """import B
+    input = """# -*- coding: utf-8 -*-
+import B
 #A
 #B
 #C
 import C
 import A
 """
-    output = """import A
+    output = """# -*- coding: utf-8 -*-
+import A
 import B
 #A
 #B

@@ -40,6 +40,7 @@ class ReadInput():
         self.indent = indent
 
     def clean(self):
+        self.lines_before_any_imports = None
         self.lines_before_import = []
         self.pre_import = {}
         self.pre_from_import = {}
@@ -54,15 +55,21 @@ class ReadInput():
                 i += 1
         return lines
 
+    def store_line(self, target_map, line):
+        # Special case keep the first comments at the very top of the file (eg utf encodings)
+        if self.lines_before_any_imports is None:
+            self.lines_before_any_imports = self.lines_before_import
+            self.lines_before_import = []
+        target_map[line] = self.remove_double_newlines(self.lines_before_import)
+        self.lines_before_import = []
+
     def process_line(self, l):
         if does_line_end_in_noqa(l):
             self.lines_before_import.append(l)
         elif re.match(IMPORT_LINE, l):
-            self.pre_import[split_imports(l)] = self.remove_double_newlines(self.lines_before_import)
-            self.lines_before_import = []
+            self.store_line(self.pre_import, split_imports(l))
         elif re.match(FROM_IMPORT_LINE, l):
-            self.pre_from_import[sort_from_import(l)] = self.remove_double_newlines(self.lines_before_import)
-            self.lines_before_import = []
+            self.store_line(self.pre_from_import, sort_from_import(l))
         else:
             self.lines_before_import.append(l)
 
@@ -73,8 +80,7 @@ class ReadInput():
         if '#' not in l:
             # squash to normal
             l = l.replace('(', '').replace(')', '')
-            self.pre_from_import[sort_from_import(l)] = self.remove_double_newlines(self.lines_before_import)
-            self.lines_before_import = []
+            self.store_line(self.pre_from_import, sort_from_import(l))
             return
 
         base = l[0:l.find('(') + 1]
@@ -182,4 +188,6 @@ class ReadInput():
 
                     else:
                         data += lines[i]
-        return self.pre_import, self.pre_from_import, self.lines_before_import
+        if self.lines_before_any_imports is None:
+            self.lines_before_any_imports = []
+        return self.pre_import, self.pre_from_import, self.lines_before_any_imports, self.lines_before_import

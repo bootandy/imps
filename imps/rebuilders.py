@@ -126,10 +126,10 @@ class Rebuilder():
         self.local_imports = local_imports or []
         self.indent = indent
 
-    def rebuild(self, pre_import, pre_from_import, remaining_lines):
+    def rebuild(self, pre_import, pre_from_import, lines_before_any_imports, remaining_lines):
         imports_by_type = classify_imports(pre_import.keys(), self.local_imports)
         from_imports_by_type = classify_imports(pre_from_import.keys(), self.local_imports)
-        output = ""
+        output = '\n'.join(lines_before_any_imports)
 
         types = imports_by_type.keys()
         types.remove(RELATIVE)
