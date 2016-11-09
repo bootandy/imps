@@ -13,5 +13,14 @@ setup(
         'console_scripts': [
             'imps = imps.shell:main',
         ],
-    }
+    },
+    keywords=['Refactoring', 'Imports'],
+    classifiers=[
+        'Intended Audience :: Developers',
+        'Natural Language :: English',
+        'Environment :: Console',
+        'Programming Language :: Python :: 2.7',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Utilities',
+    ]
 )
