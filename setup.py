@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='imps',
-    version='0.2.0',
+    version='0.2.1',
     description='Python utility to sort Python imports',
     author='Andy Boot',
     url='https://github.com/bootandy/imps',
