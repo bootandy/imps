@@ -44,6 +44,7 @@ def sorter_relative_imports(s):
 def sorter(s):
     s = s.replace('.', chr(ord('A') - 2))
     s = s.replace('_', chr(ord('A') - 1))
+    s = s.lower()
     # We only alphabetically sort the from part of the imports in style: from X import Y
     if re.match(FROM_IMPORT_PARAN_LINE, s):
         s = re.sub('\#.*\n', '', s)
@@ -52,7 +53,7 @@ def sorter(s):
         return s.strip()
     if re.match(FROM_IMPORT_LINE, s):
         return (s[0:s.find(' import ')].lower() + s[s.find(' import '):]).strip()
-    return s.lower()
+    return s
 
 
 def sorter_unify_import_and_from(s):

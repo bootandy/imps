@@ -47,18 +47,18 @@ def test_smarkets_style_from_import_capitals_are_not_lowered():
     input = '''from __future__ import absolute_import, division, print_function
 
 from imps.strings import AAAA
-from imps.strings import ZZZZ
 from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
+from imps.strings import ZZZZ
 '''
 # Possible alternative:
 #     output = '''from __future__ import absolute_import, division, print_function
 #
 # from imps.strings import (
 #     AAAA,
-#     TRIPLE_SINGLE
 #     get_doc_string,
 #     strip_to_module_name,
 #     strip_to_module_name_from_import
+#     ZZZZ,
 # )
 # '''
 

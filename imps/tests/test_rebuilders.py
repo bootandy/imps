@@ -22,11 +22,11 @@ def test_split_core_import_noqa():
 
 
 def test_sorter():
-    assert sorter("""from a import B, C""") == 'from a import B, C'
+    assert sorter("""from a import B, C""") == 'from a import b, c'
 
 
 def test_sorter_with_complex_from_import():
     assert sorter("""from a import ( # hello
     B, # hi
     C
-)""") == 'from a import B, C'
+)""") == 'from a import b, c'

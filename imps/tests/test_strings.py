@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from imps.strings import TRIPLE_DOUBLE, TRIPLE_SINGLE
 from imps.strings import get_doc_string, strip_to_module_name, strip_to_module_name_from_import
+
+from imps.strings import TRIPLE_DOUBLE, TRIPLE_SINGLE
 
 
 def test_strip_to_module_name():
