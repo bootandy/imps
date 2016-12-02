@@ -14,8 +14,8 @@ Why?
 ====
 
 It sorts your imports and is designed to work with this
-[flake8-import-order plugin](https://github.com/PyCQA/flake8-import-order)
-It differs from [Isort](https://github.com/timothycrosley/isort) as it is more opinionated and
+`flake8-import-order plugin <https://github.com/PyCQA/flake8-import-order>`
+It differs from `Isort <https://github.com/timothycrosley/isort>` as it is more opinionated and
 does not require config as it works out what to do by reading your setup.cfg
 
 
