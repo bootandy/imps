@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from imps.rebuilders import does_line_end_in_noqa, Rebuilder
+from imps.rebuilders import does_line_end_in_noqa, Rebuilder, sortable_key
 
 from imps.strings import get_doc_string
 
@@ -15,14 +15,14 @@ FROM_IMPORT_LINE_WITH_PARAN = r'^from\s.*import\s.*\('
 def sort_from_import(s):
     from_part, import_list = re.split('\s+import\s+', s, 1)
     imps = import_list.split(',')
-    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=lambda s: s.lower())
+    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=sortable_key)
     return from_part + " import " + ', '.join(imps)
 
 
 def split_imports(s):
     _, import_list = re.split('^import\s+', s, 1)
     imps = import_list.split(',')
-    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=lambda s: s.lower())
+    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=sortable_key)
     return "import " + ', '.join(imps)
 
 

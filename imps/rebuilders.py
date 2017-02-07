@@ -11,6 +11,21 @@ FROM_IMPORT_LINE = r'^from\s.*import\s.*'
 FROM_IMPORT_PARAN_LINE = r'^from\s.*import\s\(.*'
 
 
+def sortable_key(s):
+    s = s.strip()
+    broken_s = s.split(' ')
+    results = []
+    for bs in broken_s:
+        new_s = ''
+        for c in bs:
+            if c.islower():
+                new_s += '1'
+            else:
+                new_s += '0'
+        results.append(bs.lower() + new_s)
+    return ' '.join(results)
+
+
 def does_line_end_in_noqa(line):
     return re.match(NOQA, line, re.IGNORECASE)
 
@@ -44,16 +59,14 @@ def sorter_relative_imports(s):
 def sorter(s):
     s = s.replace('.', chr(ord('A') - 2))
     s = s.replace('_', chr(ord('A') - 1))
-    s = s.lower()
     # We only alphabetically sort the from part of the imports in style: from X import Y
     if re.match(FROM_IMPORT_PARAN_LINE, s):
         s = re.sub('\#.*\n', '', s)
         s = re.sub('\s+', ' ', s)
-        s = s[0:s.find(' import ')].lower() + ' import' + s[s.find('(') + 1:s.find(')')]
-        return s.strip()
+        s = sortable_key(s[4:s.find(' import ')]) + ' import' + s[s.find('(') + 1:s.find(')')]
     if re.match(FROM_IMPORT_LINE, s):
-        return (s[0:s.find(' import ')].lower() + s[s.find(' import '):]).strip()
-    return s
+        s = sortable_key(s[4:s.find(' import ')]) + s[s.find(' import '):]
+    return sortable_key(s)
 
 
 def sorter_unify_import_and_from(s):
