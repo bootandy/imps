@@ -71,24 +71,6 @@ import a_mylib
     assert Sorter().sort(input) == output
 
 
-def test_newlines_reduced():
-    input = """import io
-
-
-import sys
-
-
-import A
-"""
-    output = """import io
-
-import sys
-
-import A
-"""
-    assert Sorter().sort(input) == output
-
-
 def test_comments_between_import_types():
     input = """
 import io

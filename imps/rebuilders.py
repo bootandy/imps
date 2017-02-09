@@ -133,6 +133,16 @@ def crypto_builder(imports, from_imports, type, pre_import, pre_from_import, bui
     return output
 
 
+def remove_double_newlines(lines):
+    i = 0
+    while i < len(lines) - 1:
+        if lines[i+1] == lines[i] == '':
+            lines[i:i+1] = []
+        else:
+            i += 1
+    return lines
+
+
 class Rebuilder():
     def __init__(self, type='s', max_line_length=80, local_imports=None, indent="    "):
         self.builder_func = get_builder_func(type)
@@ -150,16 +160,16 @@ class Rebuilder():
         for type in types:
             self.first_import = True
             output += self.builder_func(
-                imports_by_type, from_imports_by_type, type, pre_import, pre_from_import, self.build
+                imports_by_type, from_imports_by_type, type, pre_import, pre_from_import, self._build
             )
 
-        output += relative_builder_func(from_imports_by_type, pre_from_import, self.build)
+        output += relative_builder_func(from_imports_by_type, pre_from_import, self._build)
 
         output = output.lstrip()
         return output + '\n'.join(remaining_lines)
 
     #  Can we make this a func not a method
-    def build(self, core_import, pre_imp):
+    def _build(self, core_import, pre_imp):
         output = ""
         if self.first_import:
             found_double_newline = False
@@ -171,6 +181,7 @@ class Rebuilder():
                 pre_imp.insert(0, '')
 
         if pre_imp:
+            pre_imp = remove_double_newlines(pre_imp)
             if not self.first_import:
                 while len(pre_imp) > 1 and pre_imp[-1] == '' and pre_imp[-2] == '':
                     pre_imp = pre_imp[0:-1]
@@ -179,10 +190,10 @@ class Rebuilder():
         if self.first_import:
             self.first_import = False
 
-        output += self.split_core_import(core_import) + '\n'
+        output += self._split_core_import(core_import) + '\n'
         return output
 
-    def split_core_import(self, core_import):
+    def _split_core_import(self, core_import):
         if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import) or (
                 '(' in core_import and ')' in core_import):
             return core_import

@@ -63,3 +63,22 @@ from imps.strings import ZZZZ
 # '''
 
     assert Sorter('s', max_line_length=110).sort(input) == input
+
+
+def test_newlines_reduced():
+    s = Sorter('s')
+    input = """import io
+
+
+import sys
+
+
+import A
+"""
+    output = """import io
+
+import sys
+
+import A
+"""
+    assert s.sort(input) == output
