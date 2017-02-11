@@ -11,6 +11,21 @@ FROM_IMPORT_LINE = r'^from\s.*import\s.*'
 FROM_IMPORT_PARAN_LINE = r'^from\s.*import\s\(.*'
 
 
+def sortable_key(s):
+    s = s.strip()
+    broken_s = s.split(' ')
+    results = []
+    for bs in broken_s:
+        new_s = ''
+        for c in bs:
+            if c.islower():
+                new_s += '1'
+            else:
+                new_s += '0'
+        results.append(bs.lower() + new_s)
+    return ' '.join(results)
+
+
 def does_line_end_in_noqa(line):
     return re.match(NOQA, line, re.IGNORECASE)
 
@@ -44,16 +59,14 @@ def sorter_relative_imports(s):
 def sorter(s):
     s = s.replace('.', chr(ord('A') - 2))
     s = s.replace('_', chr(ord('A') - 1))
-    s = s.lower()
     # We only alphabetically sort the from part of the imports in style: from X import Y
     if re.match(FROM_IMPORT_PARAN_LINE, s):
         s = re.sub('\#.*\n', '', s)
         s = re.sub('\s+', ' ', s)
-        s = s[0:s.find(' import ')].lower() + ' import' + s[s.find('(') + 1:s.find(')')]
-        return s.strip()
+        s = sortable_key(s[4:s.find(' import ')]) + ' import' + s[s.find('(') + 1:s.find(')')]
     if re.match(FROM_IMPORT_LINE, s):
-        return (s[0:s.find(' import ')].lower() + s[s.find(' import '):]).strip()
-    return s
+        s = sortable_key(s[4:s.find(' import ')]) + s[s.find(' import '):]
+    return sortable_key(s)
 
 
 def sorter_unify_import_and_from(s):
@@ -120,6 +133,16 @@ def crypto_builder(imports, from_imports, type, pre_import, pre_from_import, bui
     return output
 
 
+def remove_double_newlines(lines):
+    i = 0
+    while i < len(lines) - 1:
+        if lines[i+1] == lines[i] == '':
+            lines[i:i+1] = []
+        else:
+            i += 1
+    return lines
+
+
 class Rebuilder():
     def __init__(self, type='s', max_line_length=80, local_imports=None, indent="    "):
         self.builder_func = get_builder_func(type)
@@ -130,46 +153,43 @@ class Rebuilder():
     def rebuild(self, pre_import, pre_from_import, lines_before_any_imports, remaining_lines):
         imports_by_type = classify_imports(pre_import.keys(), self.local_imports)
         from_imports_by_type = classify_imports(pre_from_import.keys(), self.local_imports)
-        output = '\n'.join(lines_before_any_imports)
+
+        output = '\n'.join(lines_before_any_imports + [''])
+        self.new_import_group = False
 
         types = imports_by_type.keys()
         types.remove(RELATIVE)
-        for type in types:
-            self.first_import = True
-            output += self.builder_func(
-                imports_by_type, from_imports_by_type, type, pre_import, pre_from_import, self.build
-            )
 
-        output += relative_builder_func(from_imports_by_type, pre_from_import, self.build)
+        for type in types:
+            new_import_group = self.builder_func(
+                imports_by_type, from_imports_by_type, type, pre_import, pre_from_import, self._build
+            )
+            if new_import_group:
+                self.new_import_group = True
+            output += new_import_group
+
+        output += relative_builder_func(from_imports_by_type, pre_from_import, self._build)
 
         output = output.lstrip()
         return output + '\n'.join(remaining_lines)
 
     #  Can we make this a func not a method
-    def build(self, core_import, pre_imp):
+    def _build(self, core_import, pre_imp):
         output = ""
-        if self.first_import:
-            found_double_newline = False
-            for i in pre_imp:
-                if i == '':  # TODO and not in giant_comment
-                    found_double_newline = True
-                    break
-            if not found_double_newline:
+        if not self.new_import_group:
+            pre_imp = remove_double_newlines(pre_imp)
+        else:  # ensure there is a new line
+            if '' not in pre_imp:
                 pre_imp.insert(0, '')
 
-        if pre_imp:
-            if not self.first_import:
-                while len(pre_imp) > 1 and pre_imp[-1] == '' and pre_imp[-2] == '':
-                    pre_imp = pre_imp[0:-1]
-            output = '\n'.join(pre_imp) + '\n'
+        self.new_import_group = False
 
-        if self.first_import:
-            self.first_import = False
+        output += '\n'.join(pre_imp + [''])
 
-        output += self.split_core_import(core_import) + '\n'
+        output += self._split_core_import(core_import) + '\n'
         return output
 
-    def split_core_import(self, core_import):
+    def _split_core_import(self, core_import):
         if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import) or (
                 '(' in core_import and ')' in core_import):
             return core_import

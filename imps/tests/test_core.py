@@ -71,24 +71,6 @@ import a_mylib
     assert Sorter().sort(input) == output
 
 
-def test_newlines_reduced():
-    input = """import io
-
-
-import sys
-
-
-import A
-"""
-    output = """import io
-
-import sys
-
-import A
-"""
-    assert Sorter().sort(input) == output
-
-
 def test_comments_between_import_types():
     input = """
 import io
@@ -382,3 +364,18 @@ def test_split_from_import_with_as():
 def test_split_from_import_with_import_in_comment():
     test = sort_from_import('from os.path import abspath, dirname, join  # noqa # import order')
     assert test
+
+
+def test_order_withcapitals():
+    """ flake8_import_order v 0.11 behaviour changed slightly to handle capital letters more strictly"""
+    input = '''import b
+import B
+
+from pytest import a, A
+'''
+    correct = '''import B
+import b
+
+from pytest import A, a
+'''
+    assert Sorter().sort(input) == correct

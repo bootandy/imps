@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from imps.rebuilders import does_line_end_in_noqa, Rebuilder
+from imps.rebuilders import does_line_end_in_noqa, Rebuilder, sortable_key
 
 from imps.strings import get_doc_string
 
@@ -15,15 +15,19 @@ FROM_IMPORT_LINE_WITH_PARAN = r'^from\s.*import\s.*\('
 def sort_from_import(s):
     from_part, import_list = re.split('\s+import\s+', s, 1)
     imps = import_list.split(',')
-    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=lambda s: s.lower())
+    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=sortable_key)
     return from_part + " import " + ', '.join(imps)
 
 
 def split_imports(s):
     _, import_list = re.split('^import\s+', s, 1)
     imps = import_list.split(',')
-    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=lambda s: s.lower())
+    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=sortable_key)
     return "import " + ', '.join(imps)
+
+
+def is_line_an_import(l):
+    return re.match(FROM_IMPORT_LINE, l) or re.match(IMPORT_LINE, l)
 
 
 class Sorter():
@@ -32,7 +36,7 @@ class Sorter():
         self.rebuilder = Rebuilder(type, max_line_length, local_imports, indent)
 
     def sort(self, lines):
-        return self.rebuilder.rebuild(*self.reader.split_it(lines))
+        return self.rebuilder.rebuild(*self.reader.process_and_split(lines))
 
 
 class ReadInput():
@@ -45,42 +49,32 @@ class ReadInput():
         self.pre_import = {}
         self.pre_from_import = {}
 
-    # I dont think this should be done here
-    def remove_double_newlines(self, lines):
-        i = 0
-        while i < len(lines) - 1:
-            if lines[i+1] == lines[i] == '':
-                lines[i:i+1] = []
-            else:
-                i += 1
-        return lines
-
-    def store_line(self, target_map, line):
+    def _store_line(self, target_map, line):
         # Special case keep the first comments at the very top of the file (eg utf encodings)
         if self.lines_before_any_imports is None:
             self.lines_before_any_imports = self.lines_before_import
             self.lines_before_import = []
-        target_map[line] = self.remove_double_newlines(self.lines_before_import)
+        target_map[line] = self.lines_before_import
         self.lines_before_import = []
 
-    def process_line(self, l):
+    def _process_line(self, l):
         if does_line_end_in_noqa(l):
             self.lines_before_import.append(l)
         elif re.match(IMPORT_LINE, l):
-            self.store_line(self.pre_import, split_imports(l))
+            self._store_line(self.pre_import, split_imports(l))
         elif re.match(FROM_IMPORT_LINE, l):
-            self.store_line(self.pre_from_import, sort_from_import(l))
+            self._store_line(self.pre_from_import, sort_from_import(l))
         else:
             self.lines_before_import.append(l)
 
     # I don't like the fact we sort this block here.
     # but comments inside "from X import (Y #hi\n,Z)" are tricky
-    def process_from_paran_block(self, l):
+    def _process_from_paran_block(self, l):
 
         if '#' not in l:
             # squash to normal
             l = l.replace('(', '').replace(')', '')
-            self.store_line(self.pre_from_import, sort_from_import(l))
+            self._store_line(self.pre_from_import, sort_from_import(l))
             return
 
         base = l[0:l.find('(') + 1]
@@ -135,10 +129,7 @@ class ReadInput():
         self.pre_from_import[base] = self.lines_before_import
         self.lines_before_import = []
 
-    def is_line_an_import(self, l):
-        return re.match(FROM_IMPORT_LINE, l) or re.match(IMPORT_LINE, l)
-
-    def split_it(self, text):
+    def process_and_split(self, text):
         self.clean()
         lines = text.split('\n')
         data = ''
@@ -147,7 +138,7 @@ class ReadInput():
             i += 1
             data += lines[i]
 
-            if '\\' in data and data.strip()[-1] == '\\' and self.is_line_an_import(data):
+            if '\\' in data and data.strip()[-1] == '\\' and is_line_an_import(data):
                 data = data.strip()[0:-1]
                 continue
 
@@ -163,9 +154,9 @@ class ReadInput():
                         if ')' in l and ('#' not in l or l.find(')') < l.find('#')):
                             break
 
-                    self.process_from_paran_block(data)
+                    self._process_from_paran_block(data)
                 else:
-                    self.process_line(data)
+                    self._process_line(data)
                 data = ""
             else:
                 giant_comment = doc_string_points[-1][1]
@@ -180,7 +171,7 @@ class ReadInput():
 
                         if len(doc_string_points) % 2 == 0:
                             data += lines[i]
-                            self.process_line(data)
+                            self._process_line(data)
                             data = ""
                             break
                         else:
