@@ -153,15 +153,20 @@ class Rebuilder():
     def rebuild(self, pre_import, pre_from_import, lines_before_any_imports, remaining_lines):
         imports_by_type = classify_imports(pre_import.keys(), self.local_imports)
         from_imports_by_type = classify_imports(pre_from_import.keys(), self.local_imports)
-        output = '\n'.join(lines_before_any_imports)
+
+        output = '\n'.join(lines_before_any_imports + [''])
+        self.new_import_group = False
 
         types = imports_by_type.keys()
         types.remove(RELATIVE)
+
         for type in types:
-            self.first_import = True
-            output += self.builder_func(
+            new_import_group = self.builder_func(
                 imports_by_type, from_imports_by_type, type, pre_import, pre_from_import, self._build
             )
+            if new_import_group:
+                self.new_import_group = True
+            output += new_import_group
 
         output += relative_builder_func(from_imports_by_type, pre_from_import, self._build)
 
@@ -171,24 +176,15 @@ class Rebuilder():
     #  Can we make this a func not a method
     def _build(self, core_import, pre_imp):
         output = ""
-        if self.first_import:
-            found_double_newline = False
-            for i in pre_imp:
-                if i == '':  # TODO and not in giant_comment
-                    found_double_newline = True
-                    break
-            if not found_double_newline:
+        if not self.new_import_group:
+            pre_imp = remove_double_newlines(pre_imp)
+        else:  # ensure there is a new line
+            if '' not in pre_imp:
                 pre_imp.insert(0, '')
 
-        if pre_imp:
-            pre_imp = remove_double_newlines(pre_imp)
-            if not self.first_import:
-                while len(pre_imp) > 1 and pre_imp[-1] == '' and pre_imp[-2] == '':
-                    pre_imp = pre_imp[0:-1]
-            output = '\n'.join(pre_imp) + '\n'
+        self.new_import_group = False
 
-        if self.first_import:
-            self.first_import = False
+        output += '\n'.join(pre_imp + [''])
 
         output += self._split_core_import(core_import) + '\n'
         return output

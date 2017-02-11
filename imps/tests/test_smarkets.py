@@ -66,7 +66,7 @@ from imps.strings import ZZZZ
 
 
 def test_newlines_reduced():
-    s = Sorter('s')
+    s = Sorter('s', 80, ['local'])
     input = """import io
 
 
@@ -78,6 +78,7 @@ import A
     output = """import io
 
 import sys
+
 
 import A
 """
