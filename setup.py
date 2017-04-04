@@ -27,3 +27,4 @@ setup(
 
 # Command to upload to pypi:
 # python setup.py sdist  upload -r https://www.python.org/pypi
+# twine upload dist/*

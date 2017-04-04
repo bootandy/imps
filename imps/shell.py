@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import argparse
+import difflib
 import os
 
 from backports import configparser
@@ -8,26 +9,31 @@ from backports import configparser
 from imps.core import Sorter
 
 
-def run(sorter, file_name):
+def run(sorter, file_name, is_dry_run):
     # Why not send array of lines in if that's what we use?
     data = file(file_name).read()
 
     output = sorter.sort(data)
     if output:
-        with open(file_name, 'w') as f:
-            f.write(output)
+        if is_dry_run:
+            result = difflib.unified_diff(output.splitlines(), data.splitlines())
+            print('\n'.join(result))
+        else:
+            with open(file_name, 'w') as f:
+                f.write(output)
 
 
 def recurse_down_tree(args, path, sorter=None):
+    is_dry_run = args.dry_run
     if os.path.isfile(path):
-        run(get_sorter(args, path), path)
+        run(get_sorter(args, path), path, is_dry_run)
     else:
         files = os.listdir(path)
         if 'setup.cfg' in files or sorter is None:
             sorter = get_sorter(args, path)
         for f in files:
             if os.path.isfile(os.path.join(path, f)) and f[-3:] == '.py':
-                run(sorter, os.path.join(path, f))
+                run(sorter, os.path.join(path, f), is_dry_run)
             elif not os.path.isfile(f) and '.' not in f:
                 recurse_down_tree(args, os.path.join(path, f), sorter)
 
@@ -84,6 +90,9 @@ def main():
     parser.add_argument('-s', '--style', type=str, help='Import style', default='')
     parser.add_argument('-l', '--max-line-length', type=int, help='Line length')
     parser.add_argument('-n', '--application-import-names', type=str, help='Local Imports')
+
+    parser.add_argument('-d', '--dry-run', dest='dry_run', action='store_true')
+    parser.set_defaults(dry_run=False)
 
     args = parser.parse_args()
 
