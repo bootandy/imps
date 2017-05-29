@@ -62,7 +62,7 @@ def get_doc_string(s):
         double = s.find(TRIPLE_DOUBLE)
         single = s.find(TRIPLE_SINGLE)
 
-        if double == single:
+        if double == single == -1:
             break
         elif (double < single or single == -1) and double != -1:
             s, base_index, p2 = get_part(s, base_index, TRIPLE_DOUBLE)
