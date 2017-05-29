@@ -366,7 +366,7 @@ def test_split_from_import_with_import_in_comment():
     assert test
 
 
-def test_order_withcapitals():
+def test_order_with_capitals():
     """ flake8_import_order v 0.11 behaviour changed slightly to handle capital letters more strictly"""
     input = '''import b
 import B
