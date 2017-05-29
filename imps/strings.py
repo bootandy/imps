@@ -21,7 +21,7 @@ def is_hash_a_comment(s):
     return ("'" not in s or s.index('#') < s.index("'")) and ('"' not in s or s.index('#') < s.index('"'))
 
 
-def get_doc_string_by_type2(s, quote_type):
+def get_doc_string_by_type(s, quote_type):
     opposite_quote = {TRIPLE_DOUBLE: "'", TRIPLE_SINGLE: '"'}[quote_type]
 
     if '#' in s and s.index('#') < s.index(quote_type) and is_hash_a_comment(s):
@@ -35,7 +35,7 @@ def get_doc_string_by_type2(s, quote_type):
 
 def get_part(s, base_index, quote):
     points = []
-    index, in_quote = get_doc_string_by_type2(s, quote_type=quote)
+    index, in_quote = get_doc_string_by_type(s, quote_type=quote)
 
     if in_quote:
         points.append((index + base_index, quote))
@@ -75,34 +75,3 @@ def get_doc_string(s):
             raise Exception('impossible')
 
     return points
-
-#
-# def get_doc_string_by_type(s, quote_type, from_point=0, in_doc_string=False):
-#     s2 = s[from_point:]
-#
-#     opposite_quote = {TRIPLE_DOUBLE: "'", TRIPLE_SINGLE: '"'}[quote_type]
-#
-#     # pull out into different func?
-#     if in_doc_string:
-#         if quote_type in s2:
-#             return '?', [from_point + s2.index(quote_type)] + get_doc_string_by_type(
-#                 s, quote_type, from_point + s2.index(quote_type) + 3, in_doc_string=False
-#             )
-#         else:
-#             return '', []
-#
-#     if quote_type not in s:
-#         return '', []
-#
-#     # not if # is in a comment
-#     if '#' in s2 \
-#             and s2.index('#') < s2.index(quote_type) \
-#             and (opposite_quote not in s2 or s2.index('#') < s2.index(opposite_quote)):
-#         return '', []
-#
-#     if opposite_quote in s2 and s2.index(opposite_quote) < s2.index(quote_type):
-#         return get_doc_string(s, from_point + s2.index(opposite_quote, s2.index(opposite_quote) + 1) + 1)
-#
-#     return quote_type, [from_point + s2.index(quote_type)] + get_doc_string_by_type(
-#         s, quote_type, from_point + s2.index(quote_type) + 3, in_doc_string=True
-#     )
