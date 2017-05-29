@@ -35,7 +35,14 @@ import C
     assert Sorter().sort(input) == output
 
 
-def test_base_with_func_in():  # Maybe it shouldn't do this
+def test_base_with_func_in():
+    """
+    imports 'own' the space above them so when they are sorted the 'above space' moves with them.
+    At the time of writing the my_func() function is considered to 'belong' to the line import A
+    and therefore when import A is moved up so does the function.
+
+    I am open to changing this test if required
+    """
     input = """import B
 
 def my_func():
