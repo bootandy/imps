@@ -386,3 +386,13 @@ import b
 from pytest import A, a
 '''
     assert Sorter().sort(input) == correct
+
+
+def test_complex_multi_quote_strings():
+    input = '''import a
+""" fasdfasdf """ """
+sdf""" """dsaf s""" """dasf
+"""
+import b
+'''
+    assert Sorter().sort(input) == input

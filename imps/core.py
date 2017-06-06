@@ -132,15 +132,15 @@ class ReadInput():
     def process_and_split(self, text):
         self.clean()
         lines = text.split('\n')
-        data = ''
         i = -1
         while i < len(lines) - 1:
             i += 1
-            data += lines[i]
+            data = lines[i]
 
-            if '\\' in data and data.strip()[-1] == '\\' and is_line_an_import(data):
-                data = data.strip()[0:-1]
-                continue
+            if is_line_an_import(lines[i]) and '\\' in lines[i] and lines[i].strip()[-1] == '\\':
+                while '\\' in lines[i] and lines[i].strip()[-1] == '\\':
+                    data = data.strip()[0:-1] + lines[i+1]
+                    i += 1
 
             doc_string_points = get_doc_string(data)
 
@@ -157,28 +157,21 @@ class ReadInput():
                     self._process_from_paran_block(data)
                 else:
                     self._process_line(data)
-                data = ""
             else:
                 giant_comment = doc_string_points[-1][1]
 
                 while True:
                     i += 1
-                    data += '\n'
+                    data += '\n' + lines[i]
                     comment_point = lines[i].find(giant_comment)
                     if comment_point != -1:
                         after_comment = lines[i][comment_point + 3:]
                         doc_string_points = get_doc_string(after_comment)
 
                         if len(doc_string_points) % 2 == 0:
-                            data += lines[i]
                             self._process_line(data)
-                            data = ""
                             break
-                        else:
-                            giant_comment = doc_string_points[-1][1]
 
-                    else:
-                        data += lines[i]
         if self.lines_before_any_imports is None:
             self.lines_before_any_imports = []
         return self.pre_import, self.pre_from_import, self.lines_before_any_imports, self.lines_before_import
