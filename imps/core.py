@@ -62,6 +62,8 @@ class ReadInput():
             self.lines_before_import.append(l)
         elif re.match(IMPORT_LINE, l):
             self._store_line(self.pre_import, split_imports(l))
+        elif re.match(FROM_IMPORT_LINE_WITH_PARAN, l):
+            self._process_from_paran_block(l)
         elif re.match(FROM_IMPORT_LINE, l):
             self._store_line(self.pre_from_import, sort_from_import(l))
         else:
@@ -153,10 +155,6 @@ class ReadInput():
                         data += '\n' + l
                         if ')' in l and ('#' not in l or l.find(')') < l.find('#')):
                             break
-
-                    self._process_from_paran_block(data)
-                else:
-                    self._process_line(data)
             else:
                 giant_comment = doc_string_points[-1][1]
 
@@ -169,8 +167,8 @@ class ReadInput():
                         doc_string_points = get_doc_string(after_comment)
 
                         if len(doc_string_points) % 2 == 0:
-                            self._process_line(data)
                             break
+            self._process_line(data)
 
         if self.lines_before_any_imports is None:
             self.lines_before_any_imports = []
