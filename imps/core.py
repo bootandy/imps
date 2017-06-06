@@ -36,7 +36,9 @@ class Sorter():
         self.rebuilder = Rebuilder(type, max_line_length, local_imports, indent)
 
     def sort(self, lines):
-        return self.rebuilder.rebuild(*self.reader.process_and_split(lines))
+        self.reader.clean()
+        self.reader.process_and_split(lines)
+        return self.rebuilder.rebuild(*self.reader.get_imports_as_dicts())
 
 
 class ReadInput():
@@ -132,7 +134,6 @@ class ReadInput():
         self.lines_before_import = []
 
     def process_and_split(self, text):
-        self.clean()
         lines = text.split('\n')
         i = -1
         while i < len(lines) - 1:
@@ -144,18 +145,17 @@ class ReadInput():
                     data = data.strip()[0:-1] + lines[i+1]
                     i += 1
 
-            doc_string_points = get_doc_string(data)
+            if re.match(FROM_IMPORT_LINE_WITH_PARAN, data):
+                while True:
+                    i += 1
+                    l = lines[i]
+                    data += '\n' + l
+                    if ')' in l and ('#' not in l or l.find(')') < l.find('#')):
+                        break
 
-            # If no doc_strings found (or doc string open and closed on same line):
-            if len(doc_string_points) % 2 == 0:
-                if re.match(FROM_IMPORT_LINE_WITH_PARAN, data):
-                    while True:
-                        i += 1
-                        l = lines[i]
-                        data += '\n' + l
-                        if ')' in l and ('#' not in l or l.find(')') < l.find('#')):
-                            break
-            else:
+            # If a doc_strings was opened but not closed on this line:
+            doc_string_points = get_doc_string(data)
+            if len(doc_string_points) % 2 == 1:
                 giant_comment = doc_string_points[-1][1]
 
                 while True:
@@ -170,6 +170,7 @@ class ReadInput():
                             break
             self._process_line(data)
 
+    def get_imports_as_dicts(self):
         if self.lines_before_any_imports is None:
             self.lines_before_any_imports = []
         return self.pre_import, self.pre_from_import, self.lines_before_any_imports, self.lines_before_import
