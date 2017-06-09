@@ -54,6 +54,17 @@ def read_config(path):
     return config
 
 
+def normalize_file_name(file_name):
+    orig_file_name = file_name
+
+    while not os.path.exists(file_name) and ':' in file_name:
+        file_name = file_name[0:file_name.rfind(':')]
+
+    if not os.path.exists(file_name):
+        raise IOError('File %s does not exist' % orig_file_name)
+    return file_name
+
+
 def setup_vars(config, args):
     # Read from command line first. Else setup.cfg 'imps' else 'flake8'. Else assume 's'
     style = args.style
@@ -95,8 +106,8 @@ def main():
     parser.set_defaults(dry_run=False)
 
     args = parser.parse_args()
-
-    recurse_down_tree(args, args.file)
+    file_name = normalize_file_name(args.file)
+    recurse_down_tree(args, file_name)
 
 
 if __name__ == "__main__":
