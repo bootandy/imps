@@ -65,6 +65,10 @@ def normalize_file_name(file_name):
     return file_name
 
 
+def normalize_file_names(file_list):
+    return [normalize_file_name(f) for f in file_list]
+
+
 def setup_vars(config, args):
     # Read from command line first. Else setup.cfg 'imps' else 'flake8'. Else assume 's'
     style = args.style
@@ -96,7 +100,7 @@ def setup_vars(config, args):
 def main():
     parser = argparse.ArgumentParser(description='Sort your python')
 
-    parser.add_argument('file', nargs='?', default=os.getcwd())
+    parser.add_argument('file', nargs='*', default=[os.getcwd()])
 
     parser.add_argument('-s', '--style', type=str, help='Import style', default='')
     parser.add_argument('-l', '--max-line-length', type=int, help='Line length')
@@ -106,8 +110,9 @@ def main():
     parser.set_defaults(dry_run=False)
 
     args = parser.parse_args()
-    file_name = normalize_file_name(args.file)
-    recurse_down_tree(args, file_name)
+    file_names = normalize_file_names(args.file)
+    for file_name in file_names:
+        recurse_down_tree(args, file_name)
 
 
 if __name__ == "__main__":
