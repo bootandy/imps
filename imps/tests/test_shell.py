@@ -9,5 +9,5 @@ def test_normalize_file_name():
     assert normalize_file_name('tox.ini') == 'tox.ini'
     assert normalize_file_name('tox.ini:34:144') == 'tox.ini'
 
-    with pytest.raises(IOError):
-        normalize_file_name('bad_path.nothing')
+
+    assert normalize_file_name('bad_path.nothing') is None

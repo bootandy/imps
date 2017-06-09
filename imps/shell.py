@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import difflib
 import os
+import sys
 
 from backports import configparser
 
@@ -60,13 +61,15 @@ def normalize_file_name(file_name):
     while not os.path.exists(file_name) and ':' in file_name:
         file_name = file_name[0:file_name.rfind(':')]
 
-    if not os.path.exists(file_name):
-        raise IOError('File %s does not exist' % orig_file_name)
-    return file_name
+    if os.path.exists(file_name):
+        return file_name
+
+    print('File %s does not exist' % orig_file_name, file=sys.stderr)
+    return None
 
 
 def normalize_file_names(file_list):
-    return [normalize_file_name(f) for f in file_list]
+    return [normalize_file_name(f) for f in file_list if normalize_file_name(f)]
 
 
 def setup_vars(config, args):
