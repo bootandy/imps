@@ -146,12 +146,10 @@ class ReadInput():
                     i += 1
 
             if re.match(FROM_IMPORT_LINE_WITH_PARAN, data):
-                while True:
+                # while no bracket or (there is a hash and the hash is before bracket)
+                while ')' not in lines[i] or ('#' in lines[i] and lines[i].find('#') < lines[i].find(')')):
                     i += 1
-                    l = lines[i]
-                    data += '\n' + l
-                    if ')' in l and ('#' not in l or l.find(')') < l.find('#')):
-                        break
+                    data += '\n' + lines[i]
 
             # If a doc_strings was opened but not closed on this line:
             doc_string_points = get_doc_string(data)
