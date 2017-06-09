@@ -30,6 +30,10 @@ def is_line_an_import(l):
     return re.match(FROM_IMPORT_LINE, l) or re.match(IMPORT_LINE, l)
 
 
+def _is_there_no_close_paran(l):
+    return ')' not in l or ('#' in l and l.find('#') < l.find(')'))
+
+
 class Sorter():
     def __init__(self, type='s', max_line_length=80, local_imports=None, indent="    "):
         self.reader = ReadInput(indent)
@@ -141,13 +145,12 @@ class ReadInput():
             data = lines[i]
 
             if is_line_an_import(lines[i]) and '\\' in lines[i] and lines[i].strip()[-1] == '\\':
-                while '\\' in lines[i] and lines[i].strip()[-1] == '\\':
+                while '\\' in lines[i] and lines[i].strip()[-1] == '\\' and i < len(lines) - 1:
                     data = data.strip()[0:-1] + lines[i+1]
                     i += 1
 
             if re.match(FROM_IMPORT_LINE_WITH_PARAN, data):
-                # while no bracket or (there is a hash and the hash is before bracket)
-                while ')' not in lines[i] or ('#' in lines[i] and lines[i].find('#') < lines[i].find(')')):
+                while _is_there_no_close_paran(lines[i]) and i < len(lines) - 1:
                     i += 1
                     data += '\n' + lines[i]
 
@@ -156,7 +159,7 @@ class ReadInput():
             if len(doc_string_points) % 2 == 1:
                 giant_comment = doc_string_points[-1][1]
 
-                while True:
+                while i < len(lines) - 1:
                     i += 1
                     data += '\n' + lines[i]
                     comment_point = lines[i].find(giant_comment)
