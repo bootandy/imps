@@ -76,26 +76,21 @@ def setup_vars(config, args):
     # Read from command line first. Else setup.cfg 'imps' else 'flake8'. Else assume 's'
     style = args.style
     if not style:
-        style = config.get('imps', 'style', fallback=None)
-    if not style:
-        style = config.get('flake8', 'import-order-style', fallback=None)
-    if not style:
-        style = 's'
+        style = config.get('imps', 'style', fallback=config.get('flake8', 'import-order-style', fallback='s'))
 
     max_line_length = args.max_line_length
     if not max_line_length:
-        max_line_length = config.get('imps', 'max-line-length', fallback=None)
-    if not max_line_length:
-        max_line_length = config.get('flake8', 'max-line-length', fallback=None)
-    if not max_line_length:
-        max_line_length = 80
+        max_line_length = config.get('imps', 'max-line-length', fallback=config.get(
+            'flake8', 'max-line-length', fallback=80
+        ))
 
-    # These all look similar can we remove some code dup?
     application_import_names = args.application_import_names
     if not application_import_names:
-        application_import_names = config.get('imps', 'application-import-names', fallback='')
-    if not application_import_names:
-        application_import_names = config.get('flake8', 'application-import-names', fallback='')
+        application_import_names = config.get(
+            'imps', 'application-import-names', fallback=config.get(
+                'flake8', 'application-import-names', fallback=''
+            )
+        )
 
     return style, max_line_length, application_import_names.split(',')
 
