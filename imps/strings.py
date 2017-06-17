@@ -7,14 +7,14 @@ TRIPLE_DOUBLE = '"""'
 TRIPLE_SINGLE = "'''"
 
 
-def is_hash_a_comment(s):
+def _is_hash_a_comment(s):
     return ("'" not in s or s.index('#') < s.index("'")) and ('"' not in s or s.index('#') < s.index('"'))
 
 
 def _get_doc_string_by_type(s, quote_type):
     opposite_quote = {TRIPLE_DOUBLE: "'", TRIPLE_SINGLE: '"'}[quote_type]
 
-    if '#' in s and s.index('#') < s.index(quote_type) and is_hash_a_comment(s):
+    if '#' in s and s.index('#') < s.index(quote_type) and _is_hash_a_comment(s):
         return len(s), False
 
     if opposite_quote in s and s.index(opposite_quote) < s.index(quote_type):
