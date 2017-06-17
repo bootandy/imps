@@ -21,7 +21,7 @@ def is_hash_a_comment(s):
     return ("'" not in s or s.index('#') < s.index("'")) and ('"' not in s or s.index('#') < s.index('"'))
 
 
-def get_doc_string_by_type(s, quote_type):
+def _get_doc_string_by_type(s, quote_type):
     opposite_quote = {TRIPLE_DOUBLE: "'", TRIPLE_SINGLE: '"'}[quote_type]
 
     if '#' in s and s.index('#') < s.index(quote_type) and is_hash_a_comment(s):
@@ -33,9 +33,9 @@ def get_doc_string_by_type(s, quote_type):
     return s.index(quote_type), True
 
 
-def get_part(s, base_index, quote):
+def _get_part(s, base_index, quote):
     points = []
-    index, in_quote = get_doc_string_by_type(s, quote_type=quote)
+    index, in_quote = _get_doc_string_by_type(s, quote_type=quote)
 
     if in_quote:
         points.append((index + base_index, quote))
@@ -65,11 +65,11 @@ def get_doc_string(s):
         if double == single == -1:
             break
         elif (double < single or single == -1) and double != -1:
-            s, base_index, p2 = get_part(s, base_index, TRIPLE_DOUBLE)
+            s, base_index, p2 = _get_part(s, base_index, TRIPLE_DOUBLE)
             points += p2
 
         elif double > single or double == -1:
-            s, base_index, p2 = get_part(s, base_index, TRIPLE_SINGLE)
+            s, base_index, p2 = _get_part(s, base_index, TRIPLE_SINGLE)
             points += p2
         else:
             raise Exception('impossible')
