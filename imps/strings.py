@@ -1,20 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import re
-
 IMPORT_LIB = r'^import\s+([\w\.]+)'
 FROM_IMPORT_LIB = r'^from\s+([\w\.]+)\s+import'
 
 TRIPLE_DOUBLE = '"""'
 TRIPLE_SINGLE = "'''"
-
-
-def strip_to_module_name(line):
-    return re.match(IMPORT_LIB, line).groups()[0]
-
-
-def strip_to_module_name_from_import(line):
-    return re.match(FROM_IMPORT_LIB, line).groups()[0]
 
 
 def is_hash_a_comment(s):
