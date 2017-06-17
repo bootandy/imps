@@ -30,7 +30,7 @@ def does_line_end_in_noqa(line):
     return re.match(NOQA, line, re.IGNORECASE)
 
 
-def classify_imports(imports, local_imports):
+def _classify_imports(imports, local_imports):
     result = OrderedDict()
     result[FUTURE] = []
     result[STDLIB] = []
@@ -44,19 +44,19 @@ def classify_imports(imports, local_imports):
     return result
 
 
-def get_core_import(imp):
+def _get_core_import(imp):
     imp = re.sub('^from\s+', '', imp)
     imp = re.sub('^import\s+', '', imp)
     return re.sub('\s+.*', '', imp)
 
 
-def sorter_relative_imports(s):
+def _sorter_relative_imports(s):
     s = s.replace('.', chr(ord('z') + 1))
     s = s.replace('_', chr(ord('A') - 1))
     return s.lower()
 
 
-def sorter(s):
+def _sorter(s):
     s = s.replace('.', chr(ord('A') - 2))
     s = s.replace('_', chr(ord('A') - 1))
     # We only alphabetically sort the from part of the imports in style: from X import Y
@@ -69,71 +69,71 @@ def sorter(s):
     return sortable_key(s)
 
 
-def sorter_unify_import_and_from(s):
+def _sorter_unify_import_and_from(s):
     s = re.sub('^from\s+', '', s)
     s = re.sub('^import\s+', '', s)
-    return sorter(s)
+    return _sorter(s)
 
 
-def get_builder_func(s):
+def _get_builder_func(s):
     if s in ('s', 'smarkets'):
-        return smarkets_builder
+        return _smarkets_builder
     elif s in ('g', 'google'):
-        return google_builder
+        return _google_builder
     elif s in ('c', 'crypto', 'cryptography'):
-        return crypto_builder
+        return _crypto_builder
     else:
         raise Exception('Unknown style type %s', s)
 
 
-def relative_builder_func(from_imports, pre_from_import, build):
+def _relative_builder_func(from_imports, pre_from_import, build):
     output = ""
-    for imp in sorted(from_imports[RELATIVE], key=sorter_relative_imports):
+    for imp in sorted(from_imports[RELATIVE], key=_sorter_relative_imports):
         output += build(imp, pre_from_import[imp])
     return output
 
 
-def smarkets_builder(imports, from_imports, type, pre_import, pre_from_import, build):
+def _smarkets_builder(imports, from_imports, type, pre_import, pre_from_import, build):
     output = ""
-    for imp in sorted(imports[type], key=sorter):
+    for imp in sorted(imports[type], key=_sorter):
         output += build(imp, pre_import[imp])
 
-    for imp in sorted(from_imports[type], key=sorter):
+    for imp in sorted(from_imports[type], key=_sorter):
         output += build(imp, pre_from_import[imp])
     return output
 
 
-def google_builder(imports, from_imports, type, pre_import, pre_from_import, build):
+def _google_builder(imports, from_imports, type, pre_import, pre_from_import, build):
     output = ""
-    for imp in sorted(imports[type] + from_imports[type], key=sorter_unify_import_and_from):
+    for imp in sorted(imports[type] + from_imports[type], key=_sorter_unify_import_and_from):
         output += build(imp, pre_import.get(imp, pre_from_import.get(imp)))
     return output
 
 
-def crypto_builder(imports, from_imports, type, pre_import, pre_from_import, build):
+def _crypto_builder(imports, from_imports, type, pre_import, pre_from_import, build):
     output = ""
     if type in (STDLIB, FUTURE, RELATIVE):
-        for imp in sorted(imports[type], key=sorter):
+        for imp in sorted(imports[type], key=_sorter):
             output += build(imp, pre_import[imp])
 
-        for imp in sorted(from_imports[type], key=sorter):
+        for imp in sorted(from_imports[type], key=_sorter):
             output += build(imp, pre_from_import[imp])
     else:
         last_imp = ''
-        for imp in sorted(imports[type] + from_imports[type], key=sorter_unify_import_and_from):
-            if not last_imp or not get_core_import(imp).startswith(last_imp):
+        for imp in sorted(imports[type] + from_imports[type], key=_sorter_unify_import_and_from):
+            if not last_imp or not _get_core_import(imp).startswith(last_imp):
                 if last_imp:
                     if imp in pre_import:
                         pre_import.get(imp).append('')
                     if imp in pre_from_import:
                         pre_from_import.get(imp).append('')
-                last_imp = get_core_import(imp)
+                last_imp = _get_core_import(imp)
 
             output += build(imp, pre_import.get(imp, pre_from_import.get(imp)))
     return output
 
 
-def remove_double_newlines(lines):
+def _remove_double_newlines(lines):
     i = 0
     while i < len(lines) - 1:
         if lines[i+1] == lines[i] == '':
@@ -145,14 +145,14 @@ def remove_double_newlines(lines):
 
 class Rebuilder():
     def __init__(self, type='s', max_line_length=80, local_imports=None, indent="    "):
-        self.builder_func = get_builder_func(type)
+        self.builder_func = _get_builder_func(type)
         self.max_line_length = int(max_line_length)
         self.local_imports = local_imports or []
         self.indent = indent
 
     def rebuild(self, pre_import, pre_from_import, lines_before_any_imports, remaining_lines):
-        imports_by_type = classify_imports(pre_import.keys(), self.local_imports)
-        from_imports_by_type = classify_imports(pre_from_import.keys(), self.local_imports)
+        imports_by_type = _classify_imports(pre_import.keys(), self.local_imports)
+        from_imports_by_type = _classify_imports(pre_from_import.keys(), self.local_imports)
 
         output = '\n'.join(lines_before_any_imports + [''])
         self.new_import_group = False
@@ -168,7 +168,7 @@ class Rebuilder():
                 self.new_import_group = True
             output += new_import_group
 
-        output += relative_builder_func(from_imports_by_type, pre_from_import, self._build)
+        output += _relative_builder_func(from_imports_by_type, pre_from_import, self._build)
 
         output = output.lstrip()
         return output + '\n'.join(remaining_lines)
@@ -177,7 +177,7 @@ class Rebuilder():
     def _build(self, core_import, pre_imp):
         output = ""
         if not self.new_import_group:
-            pre_imp = remove_double_newlines(pre_imp)
+            pre_imp = _remove_double_newlines(pre_imp)
         else:  # ensure there is a new line
             if '' not in pre_imp:
                 pre_imp.insert(0, '')
