@@ -69,17 +69,23 @@ class ReadInput():
         elif re.match(IMPORT_LINE, l):
             self._store_line(self.pre_import, split_imports(l))
         elif re.match(FROM_IMPORT_LINE_WITH_PARAN, l):
-            self._process_from_paran_block(l)
+            self._process_from_paren_block(l)
         elif re.match(FROM_IMPORT_LINE, l):
             self._store_line(self.pre_from_import, sort_from_import(l))
         else:
             self.lines_before_import.append(l)
 
-    # I don't like the fact we sort this block here.
-    # but comments inside "from X import (Y #hi\n,Z)" are tricky
-    def _process_from_paran_block(self, l):
+    def _process_from_paren_block(self, l):
+        """
+        If there are no comments we squash a from X import (Y,Z) into -> from X import Y,Z
+        by removing the parenthesis
 
-        # If no comments: Squash block into normal import with no parenthesis.
+        However if there are comments we must split them into comments for the import on the line below
+        the comment and comments on the same line as the import.
+
+        Imports are then sorted inside this method to preserve the position of the comments.
+        """
+
         if '#' not in l:
             l = l.replace('(', '').replace(')', '')
             self._store_line(self.pre_from_import, sort_from_import(l))
@@ -96,7 +102,10 @@ class ReadInput():
             is_newline = l.find('\n') < l.find('#')
 
             l = l.lstrip()
+            # If the next part of l is NOT a comment.
             if l.find('#') != 0:
+
+                # l[0:end_marker] is the name of the next import
                 end_marker = l.find(',')
                 if end_marker == -1:
                     end_marker = l.find('#')
@@ -113,6 +122,8 @@ class ReadInput():
             else:
                 comment = l[l.find('#'):l.find('\n')]
 
+                # If the comment is on a newline mark it as a 'pre-import-comment' to go on the line above.
+                # (or if old_import is None which means this is the first line).
                 if is_newline or not old_import:
                     pre_comments.append(comment)
                 else:
