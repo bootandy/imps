@@ -79,8 +79,8 @@ class ReadInput():
     # but comments inside "from X import (Y #hi\n,Z)" are tricky
     def _process_from_paran_block(self, l):
 
+        # If no comments: Squash block into normal import with no parenthesis.
         if '#' not in l:
-            # squash to normal
             l = l.replace('(', '').replace(')', '')
             self._store_line(self.pre_from_import, sort_from_import(l))
             return
@@ -117,8 +117,8 @@ class ReadInput():
                     pre_comments.append(comment)
                 else:
                     same_line_comment[old_import] = comment
-                    pre_imp_comment[old_import] = pre_comments
-                    pre_comments = []
+                    if old_import not in pre_imp_comment:
+                        pre_imp_comment[old_import] = []
                 l = l[l.find('\n'):]
 
         for i in sorted(same_line_comment.keys(), key=lambda s: s.lower()):

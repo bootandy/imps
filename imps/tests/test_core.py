@@ -247,10 +247,13 @@ import Y
 
 def test_multiline_parentheses():
     input = """from imps.strings import (
-    get_doc_string,
-    strip_to_module_name, # or like this
-    # We can't handle comments in an import () yet
-    strip_to_module_name_from_import,
+    get_doc_string, # We can do same line comments
+    strip_to_module_name, # We In several # places
+    # We can now do newline comments too
+    # on several lines
+    strip_to_module_name_from_import, # Yes # We # Can
+    # Comments can be the
+    # last line too
 )
 """
     assert Sorter(max_line_length=110).sort(input) == input
