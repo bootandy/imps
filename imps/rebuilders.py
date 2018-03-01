@@ -171,7 +171,11 @@ class Rebuilder():
         output += _relative_builder_func(from_imports_by_type, pre_from_import, self._build)
 
         output = output.lstrip()
-        return output + '\n'.join(remaining_lines)
+        remaining = ('\n'.join(remaining_lines)).lstrip()
+        if remaining:
+            return output + '\n\n' + remaining
+        else:
+            return output
 
     #  Can we make this a func not a method
     def _build(self, core_import, pre_imp):

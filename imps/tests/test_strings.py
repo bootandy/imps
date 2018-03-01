@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from imps.strings import TRIPLE_DOUBLE, TRIPLE_SINGLE
-
-from imps.strings import get_doc_string
+from imps.strings import get_doc_string, TRIPLE_DOUBLE, TRIPLE_SINGLE
 
 
 def test_doc_string_ignores_normal_line():

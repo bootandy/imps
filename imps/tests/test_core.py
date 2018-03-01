@@ -193,8 +193,9 @@ from .A import A
     assert Sorter().sort(input) == input
 
 
-def test_dont_remove_double_newline_before_code():
-    input = """from imps.imps import *
+def always_a_double_new_line_between_imports_and_code():
+    input_triple_new_line = """from imps.imps import *
+
 
 
 class Style(Enum):
@@ -202,7 +203,25 @@ class Style(Enum):
     GOOGLE = 2
     CRYPTOGRAPHY = 3
 """
-    assert Sorter().sort(input) == input
+    input_double_new_line = """from imps.imps import *
+
+
+class Style(Enum):
+    SMARKETS = 1
+    GOOGLE = 2
+    CRYPTOGRAPHY = 3
+"""
+    input_single_new_line = """from imps.imps import *
+
+class Style(Enum):
+    SMARKETS = 1
+    GOOGLE = 2
+    CRYPTOGRAPHY = 3
+"""
+
+    assert Sorter().sort(input_single_new_line) == input_double_new_line
+    assert Sorter().sort(input_double_new_line) == input_double_new_line
+    assert Sorter().sort(input_triple_new_line) == input_double_new_line
 
 
 def test_reorder_from_imports():
@@ -306,6 +325,7 @@ param_b):
 """
     output = """import A, B, X, Y, Z
 
+
 def some_func(param_a, \\
 param_b):
     pass
@@ -322,7 +342,7 @@ def test_triple_quotes():
     input = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
 -21947406894019109:5730726,5730725""")
 '''
-    output = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
+    output = '''\n\nuser_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
 -21947406894019109:5730726,5730725""")
 '''
     assert Sorter().sort(input) == output

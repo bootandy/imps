@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 import re
 
 from imps.rebuilders import does_line_end_in_noqa, Rebuilder, sortable_key
-
 from imps.strings import get_doc_string
+
 
 IMPORT_LINE = r'^import\s.*'
 FROM_IMPORT_LINE = r'^from\s.*import\s.*'
@@ -75,7 +75,7 @@ class ReadInput():
         else:
             self.lines_before_import.append(l)
 
-    def _process_from_paren_block(self, l):
+    def _process_from_paren_block(self, line):
         """
         If there are no comments we squash a from X import (Y,Z) into -> from X import Y,Z
         by removing the parenthesis
@@ -86,41 +86,41 @@ class ReadInput():
         Imports are then sorted inside this method to preserve the position of the comments.
         """
 
-        if '#' not in l:
-            l = l.replace('(', '').replace(')', '')
-            self._store_line(self.pre_from_import, sort_from_import(l))
+        if '#' not in line:
+            line = line.replace('(', '').replace(')', '')
+            self._store_line(self.pre_from_import, sort_from_import(line))
             return
 
-        base = l[0:l.find('(') + 1]
+        base = line[0:line.find('(') + 1]
 
-        l = l[l.find('(') + 1:l.rfind(')')]
+        line = line[line.find('(') + 1:line.rfind(')')]
         pre_comments = []
         pre_imp_comment = {}
         same_line_comment = {}
         old_import = None
-        while l:
-            is_newline = l.find('\n') < l.find('#')
+        while line:
+            is_newline = line.find('\n') < line.find('#')
 
-            l = l.lstrip()
+            line = line.lstrip()
             # If the next part of l is NOT a comment.
-            if l.find('#') != 0:
+            if line.find('#') != 0:
 
                 # l[0:end_marker] is the name of the next import
-                end_marker = l.find(',')
+                end_marker = line.find(',')
                 if end_marker == -1:
-                    end_marker = l.find('#')
+                    end_marker = line.find('#')
                 if end_marker == -1:
-                    end_marker = l.find('\n')
+                    end_marker = line.find('\n')
 
-                old_import = l[0:end_marker]
+                old_import = line[0:end_marker]
                 if not old_import:
                     break
                 same_line_comment[old_import] = ''
                 pre_imp_comment[old_import] = pre_comments
                 pre_comments = []
-                l = l[end_marker + 1:]
+                line = line[end_marker + 1:]
             else:
-                comment = l[l.find('#'):l.find('\n')]
+                comment = line[line.find('#'):line.find('\n')]
 
                 # If the comment is on a newline mark it as a 'pre-import-comment' to go on the line above.
                 # (or if old_import is None which means this is the first line).
@@ -130,7 +130,7 @@ class ReadInput():
                     same_line_comment[old_import] = comment
                     if old_import not in pre_imp_comment:
                         pre_imp_comment[old_import] = []
-                l = l[l.find('\n'):]
+                line = line[line.find('\n'):]
 
         for i in sorted(same_line_comment.keys(), key=lambda s: s.lower()):
             if pre_imp_comment.get(i):
