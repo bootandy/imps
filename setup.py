@@ -3,9 +3,10 @@ from setuptools import setup
 
 setup(
     name='imps',
-    version='0.2.4',
+    version='0.2.5',
     description='Python utility to sort Python imports',
     author='Andy Boot',
+    author_email='bootandy@gmail.com',
     url='https://github.com/bootandy/imps',
     license="Apache",
     install_requires=['flake8-import-order', 'configparser'],
