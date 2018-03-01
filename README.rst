@@ -4,6 +4,7 @@
     :target: https://travis-ci.org/bootandy/imps
     :alt: Build Status
 
+Python 2.7 only
 
 To Install:
 ===========
@@ -36,8 +37,7 @@ Note if you run tests in Pycharm: Specify test as type: py.test
 
 Is it ready:
 ============
-Mostly.
-
+Mostly,
 
 To Run Tox locally:
 ===================
