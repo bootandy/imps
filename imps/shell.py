@@ -12,7 +12,8 @@ from imps.core import Sorter
 
 def run(sorter, file_name, is_dry_run):
     # Why not send array of lines in if that's what we use?
-    data = file(file_name).read()
+    with open(file_name, 'r') as f:
+        data = f.read()
 
     output = sorter.sort(data)
     if output:

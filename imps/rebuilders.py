@@ -157,12 +157,11 @@ class Rebuilder():
         output = '\n'.join(lines_before_any_imports + [''])
         self.new_import_group = False
 
-        types = imports_by_type.keys()
-        types.remove(RELATIVE)
-
-        for type in types:
-            new_import_group = self.builder_func(
-                imports_by_type, from_imports_by_type, type, pre_import, pre_from_import, self._build
+        for typ in imports_by_type.keys():
+            if typ == RELATIVE:
+                continue
+            new_import_group = self.special_sort(
+                imports_by_type, from_imports_by_type, typ, pre_import, pre_from_import
             )
             if new_import_group:
                 self.new_import_group = True
