@@ -15,7 +15,6 @@ import sys
 
 import flake8
 from flake8.defaults import *
-
 import pytest
 from pytest import *
 from pytest import capture
@@ -46,7 +45,6 @@ import os
 
 import ast
 import enum
-
 import os
 
 import pytest

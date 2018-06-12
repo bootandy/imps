@@ -38,10 +38,7 @@ import C
 def test_base_with_func_in():
     """
     imports 'own' the space above them so when they are sorted the 'above space' moves with them.
-    At the time of writing the my_func() function is considered to 'belong' to the line import A
-    and therefore when import A is moved up so does the function.
-
-    I am open to changing this test if required
+    Therefore when import A is moved up so does the function.
     """
     input = """import B
 
@@ -52,7 +49,6 @@ import A
 """
     output = """def my_func():
     return False
-
 import A
 import B
 """
@@ -98,7 +94,11 @@ def test_comments_between_import_types3():
 # A comment
 import sys
 """
-    assert Sorter().sort(input) == input
+    correct = """import io
+# A comment
+import sys
+"""
+    assert Sorter().sort(input) == correct
 
 
 def test_comments_between_import_types4():
@@ -107,7 +107,11 @@ def test_comments_between_import_types4():
 
 import sys
 """
-    assert Sorter().sort(input) == input
+    correct = """import io
+# A comment
+import sys
+"""
+    assert Sorter().sort(input) == correct
 
 
 def test_triple_quote_comments():
@@ -128,7 +132,6 @@ import B
 
 def test_triple_quote_with_newlines_and_imports_in_it():
     input = """import A
-
 \"\"\"
 
 
@@ -339,13 +342,13 @@ param_b):
 
 
 def test_triple_quotes():
-    input = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
+    inp = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
 -21947406894019109:5730726,5730725""")
 '''
-    output = '''\n\nuser_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
+    output = '''user_tracker._request_get = lambda url, verify: Mock(text="""20793353750002077:5730728,5730727
 -21947406894019109:5730726,5730725""")
 '''
-    assert Sorter().sort(input) == output
+    assert Sorter().sort(inp) == output
 
 
 def test_no_state_stays_in_sorting_object():
@@ -373,7 +376,6 @@ from gateways.bettingvery.server_module import *
 
 def test_file_begins_with_docstring_is_ok():
     input = '''"""Please don't destroy my docstring"""
-
 from __future__ import absolute_import, division
 '''
     assert Sorter().sort(input) == input
@@ -408,7 +410,7 @@ import b
 
 from pytest import A, a
 '''
-    assert Sorter().sort(input) == correct
+    assert Sorter(local_imports=['pytest']).sort(input) == correct
 
 
 def test_complex_multi_quote_strings():
@@ -419,3 +421,17 @@ sdf""" """dsaf s""" """dasf
 import b
 '''
     assert Sorter().sort(input) == input
+
+
+def test_add_double_newline_before_func_def():
+    inp = '''import a
+def func():
+    pass
+'''
+    out = '''import a
+
+
+def func():
+    pass
+'''
+    assert Sorter().sort(inp) == out

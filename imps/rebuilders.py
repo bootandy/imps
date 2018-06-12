@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import re
-
 from collections import OrderedDict
 
 from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
@@ -104,9 +103,9 @@ class GenericBuilder(object):
 
     def do_all(
             self, imports_by_type, from_imports_by_type, lines_before_any_imports, pre_import,
-            pre_from_import, remaining_lines
+            pre_from_import, after_imports
     ):
-        output = '\n'.join(lines_before_any_imports + [''])
+        output = '\n'.join(lines_before_any_imports)
         self.new_import_group = False
 
         for typ in imports_by_type.keys():
@@ -117,16 +116,17 @@ class GenericBuilder(object):
             )
             if new_import_group:
                 self.new_import_group = True
-            output += new_import_group
+                output += new_import_group + '\n'
 
         output += self._relative_builder_func(from_imports_by_type, pre_from_import)
+        output = output.strip()
+        after_imports_str = '\n'.join(after_imports).strip()
 
-        output = output.lstrip()
-        remaining = ('\n'.join(remaining_lines)).lstrip()
-        if remaining:
-            return output + '\n\n' + remaining
-        else:
-            return output
+        result = (output + '\n\n\n' + after_imports_str).strip()
+
+        if result:
+            return result + '\n'
+        return ''
 
     def _relative_builder_func(self, from_imports, pre_from_import):
         output = ""
@@ -135,18 +135,9 @@ class GenericBuilder(object):
         return output
 
     def _build(self, core_import, pre_imp):
-        output = ""
-        if not self.new_import_group:
-            pre_imp = _remove_double_newlines(pre_imp)
-        else:  # ensure there is a new line
-            if '' not in pre_imp:
-                pre_imp.insert(0, '')
-
-        self.new_import_group = False
-
-        output += '\n'.join(pre_imp + [''])
-
-        output += self._split_core_import(core_import) + '\n'
+        pre_imp = [a for a in pre_imp if a]
+        output = '\n'.join([''] + pre_imp + [''])
+        output += self._split_core_import(core_import)
         return output
 
     def _split_core_import(self, core_import):
@@ -172,6 +163,7 @@ class SmarketsBuilder(GenericBuilder):
 
         for imp in sorted(from_imports[typ], key=_sorter):
             output += self._build(imp, pre_from_import[imp])
+
         return output
 
 
@@ -213,11 +205,11 @@ class Rebuilder():
 
     def rebuild(
             self, local_imports, pre_import, pre_from_import, lines_before_any_imports,
-            remaining_lines
+            after_imports
     ):
         imports_by_type = _classify_imports(pre_import.keys(), local_imports)
         from_imports_by_type = _classify_imports(pre_from_import.keys(), local_imports)
         return self.builder_object.do_all(
             imports_by_type, from_imports_by_type, lines_before_any_imports, pre_import,
-            pre_from_import, remaining_lines
+            pre_from_import, after_imports
         )
