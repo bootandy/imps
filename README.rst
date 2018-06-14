@@ -1,10 +1,13 @@
 #######
 
+.. image:: https://raw.github.com/bootandy/imps/master/imps.gif
+    :alt: isort
+
 .. image:: https://travis-ci.org/bootandy/imps.png?branch=master
     :target: https://travis-ci.org/bootandy/imps
     :alt: Build Status
 
-Python 2.7 only
+Python 2.7, 3.5, 3.6
 
 To Install:
 ===========
