@@ -1,6 +1,6 @@
 #######
 
-.. image:: https://raw.github.com/bootandy/imps/master/imps.gif
+.. image:: https://raw.github.com/bootandy/imps/master/imps.png
     :alt: isort
 
 .. image:: https://travis-ci.org/bootandy/imps.png?branch=master
