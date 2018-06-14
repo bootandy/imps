@@ -5,8 +5,10 @@ import difflib
 import os
 import sys
 
-from backports import configparser
-
+try:
+    from backports import configparser
+except Exception:
+    import configparser
 from imps.core import Sorter
 
 
