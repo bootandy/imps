@@ -9,6 +9,8 @@ dist/
 imps.egg-info/
 .tox/
 dump/
+.vscode/
+.pytest_cache/
 
 
 

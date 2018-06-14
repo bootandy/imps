@@ -13,14 +13,14 @@ FROM_IMPORT_LINE_WITH_PARAN = r'^from\s.*import\s.*\('
 
 # We do sorting here early for a single line with multiple imports.
 def sort_from_import(s):
-    from_part, import_list = re.split('\s+import\s+', s, 1)
+    from_part, import_list = re.split(r'\s+import\s+', s, 1)
     imps = import_list.split(',')
     imps = sorted(set([i.strip() for i in imps if i.strip()]), key=sortable_key)
     return from_part + " import " + ', '.join(imps)
 
 
 def split_imports(s):
-    _, import_list = re.split('^import\s+', s, 1)
+    _, import_list = re.split(r'^import\s+', s, 1)
     imps = import_list.split(',')
     imps = sorted(set([i.strip() for i in imps if i.strip()]), key=sortable_key)
     return "import " + ', '.join(imps)
@@ -37,12 +37,13 @@ def _is_there_no_close_paran(l):
 class Sorter():
     def __init__(self, type='s', max_line_length=80, local_imports=None, indent="    "):
         self.reader = ReadInput(indent)
-        self.rebuilder = Rebuilder(type, max_line_length, local_imports, indent)
+        self.local_imports = local_imports or []
+        self.builder_object = Rebuilder(type, int(max_line_length), indent)
 
     def sort(self, lines):
         self.reader.clean()
         self.reader.process_and_split(lines)
-        return self.rebuilder.rebuild(*self.reader.get_imports_as_dicts())
+        return self.builder_object.rebuild(self.local_imports, *self.reader.get_imports_as_dicts())
 
 
 class ReadInput():
@@ -63,17 +64,17 @@ class ReadInput():
         target_map[line] = self.lines_before_import
         self.lines_before_import = []
 
-    def _process_line(self, l):
-        if does_line_end_in_noqa(l):
-            self.lines_before_import.append(l)
-        elif re.match(IMPORT_LINE, l):
-            self._store_line(self.pre_import, split_imports(l))
-        elif re.match(FROM_IMPORT_LINE_WITH_PARAN, l):
-            self._process_from_paren_block(l)
-        elif re.match(FROM_IMPORT_LINE, l):
-            self._store_line(self.pre_from_import, sort_from_import(l))
+    def _process_line(self, line):
+        if does_line_end_in_noqa(line):
+            self.lines_before_import.append(line)
+        elif re.match(IMPORT_LINE, line):
+            self._store_line(self.pre_import, split_imports(line))
+        elif re.match(FROM_IMPORT_LINE_WITH_PARAN, line):
+            self._process_from_paren_block(line)
+        elif re.match(FROM_IMPORT_LINE, line):
+            self._store_line(self.pre_from_import, sort_from_import(line))
         else:
-            self.lines_before_import.append(l)
+            self.lines_before_import.append(line)
 
     def _process_from_paren_block(self, line):
         """
@@ -122,8 +123,8 @@ class ReadInput():
             else:
                 comment = line[line.find('#'):line.find('\n')]
 
-                # If the comment is on a newline mark it as a 'pre-import-comment' to go on the line above.
-                # (or if old_import is None which means this is the first line).
+                # If the comment is on a newline mark it as a 'pre-import-comment' to go on the line
+                # above. (or if old_import is None which means this is the first line).
                 if is_newline or not old_import:
                     pre_comments.append(comment)
                 else:

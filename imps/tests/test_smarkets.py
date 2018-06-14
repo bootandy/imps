@@ -76,10 +76,25 @@ import sys
 import A
 """
     output = """import io
-
 import sys
-
 
 import A
 """
     assert s.sort(input) == output
+
+
+def test_no_new_line_between_same_type():
+    s = Sorter(type='s', max_line_length=110, indent="    ")
+    input_str = """
+from __future__ import absolute_import, division, print_function
+
+import re
+
+from collections import OrderedDict
+"""
+    correct = """from __future__ import absolute_import, division, print_function
+
+import re
+from collections import OrderedDict
+"""
+    assert s.sort(input_str) == correct
