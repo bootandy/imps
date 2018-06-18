@@ -7,6 +7,8 @@ from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
 
 
 NOQA = r'.*\s*\#\sNOQA\s*$'  # wont work if NOQA is inside a triple string.
+PYLINT_IGNORE = r'.*\s*\#\s*pylint:\s*disable\=.*$'  # wont work if pylint: disable is inside a triple string.
+
 FROM_IMPORT_LINE = r'^from\s.*import\s.*'
 FROM_IMPORT_PARAN_LINE = r'^from\s.*import\s\(.*'
 
@@ -28,6 +30,14 @@ def sortable_key(s):
 
 def does_line_end_in_noqa(line):
     return re.match(NOQA, line, re.IGNORECASE)
+
+
+def does_line_end_in_pylint_ignore(line):
+    if re.match(PYLINT_IGNORE, line, re.IGNORECASE):
+        _, post = re.split(r'#\spylint', line, re.IGNORECASE)
+        if 'F0401' in post or 'E0611' in post:
+            return True
+    return False
 
 
 def _classify_imports(imports, local_imports):
@@ -142,7 +152,7 @@ class GenericBuilder(object):
 
     def _split_core_import(self, core_import):
         if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import) or (
-                '(' in core_import and ')' in core_import):
+                '(' in core_import and ')' in core_import) or does_line_end_in_pylint_ignore(core_import):
             return core_import
 
         # To turn a long line of imports into a multiline import using parenthesis

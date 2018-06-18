@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from imps.core import sort_from_import, Sorter
+from imps.core import Sorter, split_imports
 
 
 def test_base_bad_order():
@@ -267,6 +267,22 @@ import Y
     assert Sorter().sort(input) == input
 
 
+def test_noqa2():
+    inp = """from brokers.smarkets.streaming_api.client import StreamingAPIClient  # noqa
+from brokers.smarkets.streaming_api.exceptions import (  # noqa
+ConnectionError, DecodeError, ParseError, SocketDisconnected, InvalidCallbackError
+)
+"""
+    assert Sorter().sort(inp) == inp
+
+
+def test_pylint_disable():
+    inp = """import six.moves.cPickle as pickle  # pylint: disable=E0611,F0401
+"""
+
+    assert Sorter().sort(inp) == inp
+
+
 def test_multiline_parentheses():
     input = """from imps.strings import (
     get_doc_string, # We can do same line comments
@@ -382,19 +398,19 @@ from __future__ import absolute_import, division
 
 
 def test_split_from_import():
-    assert sort_from_import('from A import B') == 'from A import B'
+    assert split_imports('from A import B') == 'from A import B'
 
 
 def test_split_from_import_complex():
-    assert sort_from_import('from A.B   import Z,   F, W') == 'from A.B import F, W, Z'
+    assert split_imports('from A.B   import Z,   F, W') == 'from A.B import F, W, Z'
 
 
 def test_split_from_import_with_as():
-    assert sort_from_import('from A   import this as that,   A,Z') == 'from A import A, this as that, Z'
+    assert split_imports('from A   import this as that,   A,Z') == 'from A import A, this as that, Z'
 
 
 def test_split_from_import_with_import_in_comment():
-    test = sort_from_import('from os.path import abspath, dirname, join  # noqa # import order')
+    test = split_imports('from os.path import abspath, dirname, join  # noqa # import order')
     assert test
 
 

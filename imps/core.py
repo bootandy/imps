@@ -12,18 +12,23 @@ FROM_IMPORT_LINE_WITH_PARAN = r'^from\s.*import\s.*\('
 
 
 # We do sorting here early for a single line with multiple imports.
-def sort_from_import(s):
-    from_part, import_list = re.split(r'\s+import\s+', s, 1)
-    imps = import_list.split(',')
-    imps = sorted(set([i.strip() for i in imps if i.strip()]), key=sortable_key)
-    return from_part + " import " + ', '.join(imps)
-
-
 def split_imports(s):
-    _, import_list = re.split(r'^import\s+', s, 1)
-    imps = import_list.split(',')
+    from_part, import_list = re.split(r'\s*import\s+', s, 1)
+
+    if '#' in import_list:
+        search_to = import_list.find('#')
+    else:
+        search_to = len(import_list)
+
+    ending = import_list[search_to:]
+    if ending:
+        ending = "  " + ending
+    if from_part:
+        from_part += " "
+    imps = import_list[0:search_to].split(',')
+
     imps = sorted(set([i.strip() for i in imps if i.strip()]), key=sortable_key)
-    return "import " + ', '.join(imps)
+    return from_part + "import " + ', '.join(imps) + ending
 
 
 def is_line_an_import(l):
@@ -72,7 +77,7 @@ class ReadInput():
         elif re.match(FROM_IMPORT_LINE_WITH_PARAN, line):
             self._process_from_paren_block(line)
         elif re.match(FROM_IMPORT_LINE, line):
-            self._store_line(self.pre_from_import, sort_from_import(line))
+            self._store_line(self.pre_from_import, split_imports(line))
         else:
             self.lines_before_import.append(line)
 
@@ -87,9 +92,13 @@ class ReadInput():
         Imports are then sorted inside this method to preserve the position of the comments.
         """
 
+        if '# noqa' in line:
+            self._store_line(self.pre_from_import, split_imports(line))
+            return
+
         if '#' not in line:
             line = line.replace('(', '').replace(')', '')
-            self._store_line(self.pre_from_import, sort_from_import(line))
+            self._store_line(self.pre_from_import, split_imports(line))
             return
 
         base = line[0:line.find('(') + 1]
