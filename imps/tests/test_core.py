@@ -410,8 +410,12 @@ def test_split_from_import_with_as():
 
 
 def test_split_from_import_with_import_in_comment():
-    test = split_imports('from os.path import abspath, dirname, join  # noqa # import order')
-    assert test
+    inp = """from __future__ import absolute_import
+
+import common.auto_patch  # noqa # import order
+import argparse
+"""
+    assert Sorter().sort(inp) == inp
 
 
 def test_order_with_capitals():

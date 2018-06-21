@@ -6,7 +6,7 @@ from collections import OrderedDict
 from imps.stdlib import FUTURE, get_paths, LOCAL, RELATIVE, STDLIB, THIRDPARTY
 
 
-NOQA = r'.*\s*\#\sNOQA\s*$'  # wont work if NOQA is inside a triple string.
+NOQA = r'.*\s*\#\sNOQA'  # wont work if NOQA is inside a triple string.
 PYLINT_IGNORE = r'.*\s*\#\s*pylint:\s*disable\=.*$'  # wont work if pylint: disable is inside a triple string.
 
 FROM_IMPORT_LINE = r'^from\s.*import\s.*'
@@ -28,7 +28,7 @@ def sortable_key(s):
     return ' '.join(results)
 
 
-def does_line_end_in_noqa(line):
+def does_line_have_hash_noqa(line):
     return re.match(NOQA, line, re.IGNORECASE)
 
 
@@ -151,7 +151,7 @@ class GenericBuilder(object):
         return output
 
     def _split_core_import(self, core_import):
-        if len(core_import) <= self.max_line_length or does_line_end_in_noqa(core_import) or (
+        if len(core_import) <= self.max_line_length or does_line_have_hash_noqa(core_import) or (
                 '(' in core_import and ')' in core_import) or does_line_end_in_pylint_ignore(core_import):
             return core_import
 

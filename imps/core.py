@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from imps.rebuilders import does_line_end_in_noqa, Rebuilder, sortable_key
+from imps.rebuilders import does_line_have_hash_noqa, Rebuilder, sortable_key
 from imps.strings import get_doc_string
 
 
@@ -70,7 +70,7 @@ class ReadInput():
         self.lines_before_import = []
 
     def _process_line(self, line):
-        if does_line_end_in_noqa(line):
+        if does_line_have_hash_noqa(line):
             self.lines_before_import.append(line)
         elif re.match(IMPORT_LINE, line):
             self._store_line(self.pre_import, split_imports(line))
