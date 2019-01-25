@@ -12,6 +12,10 @@ Python 2.7, 3.5, 3.6
 
 To Install:
 ===========
+pip install imps
+
+or 
+
 python setup.py install
 
 
