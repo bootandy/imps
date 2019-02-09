@@ -170,7 +170,7 @@ import B
 
 def test_multiple_triple_quotes():
     input = """import A
-\"\"\" ''' \"\"\" ''' \# ''' \"\"\"
+\"\"\" ''' \"\"\" ''' \\# ''' \"\"\"
  new line \"\"\"
 import B
 """
@@ -455,3 +455,14 @@ def func():
     pass
 '''
     assert Sorter().sort(inp) == out
+
+
+def test_pyximport():
+    inp = """from brokers.smarkets import odds as smk_odds
+
+
+pyximport.install(setup_args={'include_dirs': [np.get_include()]})
+
+import cypoisson  # noqa: I100  # pylint: disable=E0401
+"""
+    assert Sorter().sort(inp) == inp
